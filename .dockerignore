@@ -1,0 +1,12 @@
+*
+!go.*
+!main.go
+
+# The following is insane because .dockerignore is dumb.
+!internal/
+internal/*/*
+!internal/*/*/
+internal/*/*/*
+!internal/*/*/*.go
+internal/*/*/*/*
+!internal/*/*/*/*.go

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+FUNC=$(scripts/get-function-name)
+GITSHA=$(git rev-parse HEAD)
+REPO=$(scripts/get-ecr-repository-url)
+TAG=${REPO}:${GITSHA}
+NAME=$(echo $REPO | sed 's|.*/||')
+
+docker build \
+    --build-arg=GITSHA=${GITSHA} \
+    --build-arg=TIMESTAMP=$(date -u +%Y-%m-%d-%H:%M) \
+    --compress --force-rm --pull \
+    -t $TAG \
+    -f ./Dockerfile \
+    .
+
+docker push $TAG
+
+docker tag $TAG ${REPO}:latest
+
+aws ecr batch-delete-image \
+    --repository-name $NAME \
+    --image-ids imageTag=latest
+
+docker push ${REPO}:latest
+
+aws lambda update-function-code \
+    --function-name ${FUNC} \
+    --image-uri ${REPO}:latest

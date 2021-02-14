@@ -1,0 +1,24 @@
+# Directories
+/.idea/
+/.vscode/
+/archive/
+/data/
+.terraform/
+node_modules/
+
+# Files
+/.env
+/docker-compose.override.yml
+/local.env
+/magnet
+/TODO
+.DS_Store
+.terraform.lock.hcl
+coverage.txt
+terraform.tfvars
+terragrunt-local.json
+
+# Patterns
+.*.sw[op]
+*-generated.tf
+*.zip
