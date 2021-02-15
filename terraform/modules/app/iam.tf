@@ -24,6 +24,12 @@ data "aws_iam_policy_document" "app" {
     resources = [aws_dynamodb_table.sessions.arn]
   }
   statement {
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [aws_s3_bucket.media.arn]
+  }
+  statement {
     actions   = ["ssm:GetParameters"]
     resources = ["arn:aws:ssm:*:*:parameter/${local.ssm_prefix}/*"]
   }

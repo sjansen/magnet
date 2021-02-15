@@ -1,3 +1,7 @@
+output "bucket" {
+  value = module.app.bucket
+}
+
 output "ecr_arn" {
   value = module.app.ecr_arn
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/sjansen/magnet/internal/pages"
 )
 
-// Root is the root app page.
+// Root is the app's root page.
 func Root(w http.ResponseWriter, r *http.Request) {
 	pages.WriteResponse(w, &pages.RootPage{
 		GitSHA:    build.GitSHA,

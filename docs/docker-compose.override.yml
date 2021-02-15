@@ -6,3 +6,6 @@ services:
       - "8000:8000"
     volumes:
       - ./data/dynamodb-local:/data/dynamodb-local
+  go:
+    volumes:
+      - ${HOME}/.aws/:/root/.aws/

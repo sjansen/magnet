@@ -5,6 +5,7 @@ docker-compose build --pull go
 docker-compose \
     -f docker-compose.yml \
     -f docker-compose.localdev.yml \
+    -f docker-compose.override.yml \
     up --abort-on-container-exit \
     --exit-code-from=go \
     --force-recreate

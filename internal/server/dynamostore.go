@@ -4,9 +4,7 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/sjansen/dynamostore"
 
@@ -14,20 +12,20 @@ import (
 )
 
 func (s *Server) openDynamoStores(cfg *config.Config) (scs.Store, scs.Store, error) {
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, nil, err
+	var svc *dynamodb.DynamoDB
+	if cfg.SessionStore.Endpoint.Host == "" {
+		svc = dynamodb.New(s.aws)
+	} else {
+		svc = dynamodb.New(s.aws,
+			s.aws.Config.Copy().
+				WithEndpoint(
+					cfg.SessionStore.Endpoint.String(),
+				).
+				WithCredentials(
+					credentials.NewStaticCredentials("id", "secret", "token"),
+				),
+		)
 	}
-
-	awscfg := aws.NewConfig().
-		WithCredentialsChainVerboseErrors(true)
-	if cfg.SessionStore.Endpoint.Host != "" {
-		awscfg = awscfg.WithEndpoint(cfg.SessionStore.Endpoint.String()).
-			WithCredentials(
-				credentials.NewStaticCredentials("id", "secret", "token"),
-			)
-	}
-	svc := dynamodb.New(sess, awscfg)
 
 	store := dynamostore.NewWithTableName(svc, cfg.SessionStore.Table)
 	if cfg.SessionStore.Create {

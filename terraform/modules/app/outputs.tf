@@ -1,3 +1,7 @@
+output "bucket" {
+  value = aws_s3_bucket.media.id
+}
+
 output "ecr_arn" {
   value = aws_ecr_repository.app.arn
 }

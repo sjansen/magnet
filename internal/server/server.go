@@ -12,6 +12,8 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/crewjam/saml/samlsp"
 	"github.com/go-chi/chi"
@@ -24,6 +26,7 @@ var _ samlsp.Session = &Server{}
 
 // Server provides Strongbox's API
 type Server struct {
+	aws        *session.Session
 	config     *config.Config
 	lambda     *chiadapter.ChiLambda
 	relaystate *scs.SessionManager
@@ -44,18 +47,31 @@ func New(cfg *config.Config) (*Server, error) {
 		done:   make(chan struct{}),
 	}
 
+	fmt.Println("Preparing AWS clients...")
+	aws, err := session.NewSession(
+		aws.NewConfig().
+			WithCredentialsChainVerboseErrors(true),
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.aws = aws
+
+	fmt.Println("Loading SAML config...")
 	sp, err := newSAMLMiddleware(cfg)
 	if err != nil {
 		return nil, err
 	}
 	s.saml = sp
 
+	fmt.Println("Preparing session store...")
 	relaystate, sessions, err := s.openDynamoStores(cfg)
 	if err != nil {
 		return nil, err
 	}
 	s.addSCS(relaystate, sessions)
 
+	fmt.Println("Configuring routes...")
 	s.addRouter()
 	return s, nil
 }
@@ -73,10 +89,10 @@ func (s *Server) LambdaHandler(ctx context.Context, req events.APIGatewayProxyRe
 
 // ListenAndServe starts the server waiting for network connections.
 func (s *Server) ListenAndServe() error {
-	fmt.Println("Listening to", s.config.Root.String())
+	fmt.Printf("Listening to http://%s/\n", s.config.Listen)
 
 	server := &http.Server{
-		Addr:    s.config.Addr,
+		Addr:    s.config.Listen,
 		Handler: s.router,
 	}
 	go func() {

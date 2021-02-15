@@ -51,7 +51,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     target_origin_id = "APIGW"
 
     compress               = true
-    default_ttl            = 300
+    default_ttl            = 0
     max_ttl                = 3600
     min_ttl                = 0
     viewer_protocol_policy = "redirect-to-https"
@@ -69,6 +69,29 @@ resource "aws_cloudfront_distribution" "cdn" {
     bucket          = aws_s3_bucket.logs.bucket_regional_domain_name
   }
 
+  dynamic "ordered_cache_behavior" {
+    for_each = toset(["/icons/*", "/media/*"])
+    content {
+      path_pattern     = ordered_cache_behavior.value
+      allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+      cached_methods   = ["GET", "HEAD", "OPTIONS"]
+      target_origin_id = "public-media"
+
+      compress               = true
+      default_ttl            = 86400
+      max_ttl                = 604800
+      min_ttl                = 0
+      viewer_protocol_policy = "https-only"
+
+      forwarded_values {
+        query_string = false
+        cookies {
+          forward = "none"
+        }
+      }
+    }
+  }
+
   origin {
     domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.default.invoke_url, "https://"), "/default")
     origin_path = "/default"
@@ -78,6 +101,14 @@ resource "aws_cloudfront_distribution" "cdn" {
       https_port             = "443"
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  origin {
+    domain_name = aws_s3_bucket.media.bucket_regional_domain_name
+    origin_id   = "public-media"
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
     }
   }
 
@@ -91,4 +122,9 @@ resource "aws_cloudfront_distribution" "cdn" {
     acm_certificate_arn = aws_acm_certificate_validation.cert.certificate_arn
     ssl_support_method  = "sni-only"
   }
+}
+
+resource "aws_cloudfront_origin_access_identity" "cdn" {
+  provider = aws.us-east-1
+  comment  = "OAI for ${var.dns_name}"
 }

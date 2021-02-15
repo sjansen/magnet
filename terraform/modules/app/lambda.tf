@@ -16,6 +16,7 @@ resource "aws_lambda_function" "app" {
       MAGNET_SAML_PRIVATE_KEY  = aws_ssm_parameter.SAML_PRIVATE_KEY.name
       MAGNET_SESSION_TABLE     = aws_dynamodb_table.sessions.name
       MAGNET_SSM_PREFIX        = "/${local.ssm_prefix}/"
+      MAGNET_BUCKET            = aws_s3_bucket.media.id,
       MAGNET_URL               = "https://${var.dns_name}/"
     }
   }

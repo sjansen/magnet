@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/go-chi/chi"
 	cmw "github.com/go-chi/chi/middleware"
 
@@ -28,8 +29,9 @@ func (s *Server) addRouter() {
 	}
 
 	r.Get("/", handlers.Root)
-	r.Get("/public", handlers.Public)
 	r.Mount("/saml/", s.saml)
+	r.Handle("/browse/*", s.saml.RequireAccount(http.HandlerFunc(
+		handlers.NewBrowser("/browse/", s.config.Bucket, s3.New(s.aws)).Handler,
+	)))
 	r.Handle("/profile", s.saml.RequireAccount(http.HandlerFunc(handlers.Profile)))
-	r.Handle("/secret", s.saml.RequireAccount(http.HandlerFunc(handlers.Secret)))
 }

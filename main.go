@@ -33,6 +33,7 @@ func startCLI() {
 		kong.UsageOnError(),
 	)
 
+	fmt.Println("Loading config...")
 	cfg, err := config.New()
 	ctx.FatalIfErrorf(err)
 
@@ -64,6 +65,7 @@ func startLambda() {
 type runserverCmd struct{}
 
 func (cmd *runserverCmd) Run(ctx *context) error {
+	fmt.Println("Starting server...")
 	s, err := server.New(ctx.cfg)
 	if err != nil {
 		return err

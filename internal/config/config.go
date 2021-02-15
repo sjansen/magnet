@@ -11,14 +11,15 @@ import (
 
 // Config contains application settings.
 type Config struct {
-	Debug bool   `envconfig:"DEBUG,optional"`
-	Addr  string `envconfig:"MAGNET_LISTEN,default=localhost:8080"`
-	Root  URL    `envconfig:"MAGNET_URL,default=http://localhost:8080/"`
-	SAML  struct {
+	Debug  bool   `envconfig:"DEBUG,optional"`
+	Bucket string `envconfig:"MAGNET_BUCKET"`
+	Listen string `envconfig:"MAGNET_LISTEN,default=localhost:8080"`
+	SAML   struct {
 		EntityID    string `envconfig:"MAGNET_SAML_ENTITY_ID,default=magnet"`
 		MetadataURL string `envconfig:"MAGNET_SAML_METADATA_URL"`
 		Certificate string `envconfig:"MAGNET_SAML_CERTIFICATE"`
 		PrivateKey  string `envconfig:"MAGNET_SAML_PRIVATE_KEY"`
+		Root        URL    `envconfig:"MAGNET_URL,default=http://localhost:8080/"`
 	}
 	SessionStore struct {
 		Create   bool   `envconfig:"MAGNET_SESSION_CREATE,default=false"`
