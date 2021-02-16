@@ -34,9 +34,7 @@ func (p *RootPage) WriteContent(w io.Writer) {
 	io.WriteString(w, `
 	<div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">`)
 	io.WriteString(w, `
-	<dt class=" row-span-%d text-sm font-medium text-gray-500">`)
-	io.WriteString(w, "GitSHA")
-	io.WriteString(w, `</dt>`)
+	<dt class=" row-span-%d text-sm font-medium text-gray-500">GitSHA</dt>`)
 	io.WriteString(w, `
 	<dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">`)
 	io.WriteString(w, html.EscapeString(p.GitSHA))
@@ -47,9 +45,7 @@ func (p *RootPage) WriteContent(w io.Writer) {
 	io.WriteString(w, `
 	<div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">`)
 	io.WriteString(w, `
-	<dt class=" row-span-%d text-sm font-medium text-gray-500">`)
-	io.WriteString(w, "Timestamp")
-	io.WriteString(w, `</dt>`)
+	<dt class=" row-span-%d text-sm font-medium text-gray-500">Timestamp</dt>`)
 	io.WriteString(w, `
 	<dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">`)
 	io.WriteString(w, html.EscapeString(p.Timestamp))
@@ -66,5 +62,9 @@ func (p *RootPage) WriteContent(w io.Writer) {
 	io.WriteString(w, `
 </div>
 `)
+	io.WriteString(w, `
+<div class="text-2xl text-center px-4 py-5 sm:px-6">
+<a href="/browse/media/">Browse Media</a>
+</div>`)
 	p.FinishContent(w)
 }

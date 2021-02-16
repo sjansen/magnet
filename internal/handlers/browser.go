@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/dustin/go-humanize"
 	"github.com/sjansen/magnet/internal/pages"
 )
 
@@ -44,6 +45,7 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	hasFinalSlash := strings.HasSuffix(path, "/")
 
 	result, err := b.svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket:    b.bkt,
@@ -58,10 +60,25 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !hasFinalSlash && len(result.CommonPrefixes) == 1 && len(result.Contents) == 0 {
+		redirect := path + "/"
+		if redirect == *result.CommonPrefixes[0].Prefix {
+			http.Redirect(w, r, b.base+redirect, 302)
+			return
+		}
+	}
+
 	page := &pages.BrowserPage{
 		Prefix:   path,
 		Prefixes: make([]string, 0, len(result.CommonPrefixes)),
 		Objects:  make(map[string]string, len(result.Contents)),
+	}
+	if !hasFinalSlash && len(result.CommonPrefixes) == 0 && len(result.Contents) == 1 {
+		object := result.Contents[0]
+		if path == *object.Key {
+			page.Content.Timestamp = object.LastModified.String()
+			page.Content.Size = humanize.Bytes(uint64(*object.Size))
+		}
 	}
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
