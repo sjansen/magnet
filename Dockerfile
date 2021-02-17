@@ -10,11 +10,11 @@ RUN cd /go/src/${MODULE} && \
 ADD internal /go/src/${MODULE}/internal
 RUN cd /go/src/${MODULE} && \
     echo GITSHA=${GITSHA} && \
-    echo TIMESTAMP=${TIMESTAMP} && \
+    echo TIMESTAMP="${TIMESTAMP}" && \
     CGO_ENABLED=0 GOOS=linux \
     go build \
         -a -installsuffix cgo \
-        -ldflags="-s -w -X ${MODULE}/internal/build.GitSHA=${GITSHA} -X ${MODULE}/internal/build.Timestamp=${TIMESTAMP}" \
+        -ldflags="-s -w -X ${MODULE}/internal/build.GitSHA=${GITSHA} -X '${MODULE}/internal/build.Timestamp=${TIMESTAMP}'" \
         -o /app
 
 FROM scratch

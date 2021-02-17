@@ -52,7 +52,10 @@ func (s *Server) addSCS(relaystate, sessions scs.Store) {
 	if domain == "localhost" || domain == "127.0.0.1" {
 		sm.Cookie.Secure = false
 	} else {
-		sm.Cookie.SameSite = http.SameSiteStrictMode
+		sm.Cookie.SameSite = http.SameSiteNoneMode
+		// NOTE: enabling strict mode triggers a redirect loop when
+		// running behind CloudFront and I haven't figured out why
+		//sm.Cookie.SameSite = http.SameSiteStrictMode
 		sm.Cookie.Secure = true
 	}
 	sm.IdleTimeout = time.Hour

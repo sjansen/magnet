@@ -1,11 +1,19 @@
+data "aws_iam_policy_document" "AssumeRole-apigw" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["apigateway.amazonaws.com"]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "AssumeRole-lambda" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
-      type = "Service"
-      identifiers = [
-        "lambda.amazonaws.com",
-      ]
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
     }
   }
 }
@@ -41,11 +49,23 @@ resource "aws_iam_policy" "app" {
   policy = data.aws_iam_policy_document.app.json
 }
 
+resource "aws_iam_role" "apigw" {
+  name = "APIGateway"
+  tags = var.tags
+
+  assume_role_policy = data.aws_iam_policy_document.AssumeRole-apigw.json
+}
+
 resource "aws_iam_role" "app" {
   name = local.app_iam_role_name
   tags = var.tags
 
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
+}
+
+resource "aws_iam_role_policy_attachment" "apigw" {
+  role       = aws_iam_role.apigw.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
 
 resource "aws_iam_role_policy_attachment" "app" {
