@@ -10,3 +10,4 @@ internal/*/*/*
 !internal/*/*/*.go
 internal/*/*/*/*
 !internal/*/*/*/*.go
+!templates/

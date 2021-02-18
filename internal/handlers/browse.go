@@ -68,18 +68,25 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	page := &pages.BrowserPage{
-		Prefix:   path,
-		Prefixes: make([]string, 0, len(result.CommonPrefixes)),
-		Objects:  make(map[string]string, len(result.Contents)),
-	}
 	if !hasFinalSlash && len(result.CommonPrefixes) == 0 && len(result.Contents) == 1 {
 		object := result.Contents[0]
 		if path == *object.Key {
-			page.Content.Timestamp = object.LastModified.String()
-			page.Content.Size = humanize.Bytes(uint64(*object.Size))
+			page := &pages.ObjectPage{
+				Timestamp: object.LastModified.String(),
+				Size:      humanize.Bytes(uint64(*object.Size)),
+			}
+			page.Key = path
+
+			pages.WriteResponse(w, page)
+			return
 		}
 	}
+
+	page := &pages.PrefixPage{
+		Prefixes: make([]string, 0, len(result.CommonPrefixes)),
+		Objects:  make(map[string]string, len(result.Contents)),
+	}
+	page.Key = path
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
 		page.Prefixes = append(page.Prefixes, prefix)

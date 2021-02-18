@@ -1,12 +1,12 @@
-FROM golang:1.15-alpine as builder
+FROM golang:1.16-alpine as builder
 ARG MODULE=github.com/sjansen/magnet
-ARG GITSHA="(missing)"
-ARG TIMESTAMP="(missing)"
-
 RUN apk --update add ca-certificates git
 ADD go.mod go.sum main.go /go/src/${MODULE}/
 RUN cd /go/src/${MODULE} && \
     go mod download
+
+ARG GITSHA="(missing)"
+ARG TIMESTAMP="(missing)"
 ADD internal /go/src/${MODULE}/internal
 RUN cd /go/src/${MODULE} && \
     echo GITSHA=${GITSHA} && \
@@ -18,8 +18,9 @@ RUN cd /go/src/${MODULE} && \
         -o /app
 
 FROM scratch
-COPY --from=builder /app /app
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /app /app
+ADD templates /templates
 EXPOSE 8000
 WORKDIR /
 ENTRYPOINT ["/app"]
