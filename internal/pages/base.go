@@ -13,6 +13,7 @@ func init() {
 	tmpls = template.Must(template.ParseGlob("templates/*.html"))
 }
 
+// Href is an HTML <a href="...">...</a>
 type Href struct {
 	Text string
 	URL  string

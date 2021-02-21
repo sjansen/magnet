@@ -1,0 +1,9 @@
+{{template "header" .}}
+<form action="{{ .Form.Action }}" method="{{ .Form.Method }}" enctype="{{ .Form.Enctype }}">
+  {{range $name, $value := .Form.Fields }}
+  <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
+  {{end}}
+  <input type="file" name="file"><br />
+  <input type="submit" value="Upload" class="mt-4 px-4 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50">
+</form>
+{{template "footer" .}}

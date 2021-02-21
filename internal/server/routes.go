@@ -28,10 +28,15 @@ func (s *Server) addRouter() {
 		r.Use(s.relaystate.LoadAndSave)
 	}
 
+	svc := s3.New(s.aws)
+
 	r.Get("/", handlers.Root)
 	r.Mount("/saml/", s.saml)
 	r.Handle("/browse/*", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewBrowser("/browse/", s.config.Bucket, s3.New(s.aws)).Handler,
+		handlers.NewBrowser("/browse/", s.config.Bucket, svc).Handler,
 	)))
 	r.Handle("/profile", s.saml.RequireAccount(http.HandlerFunc(handlers.Profile)))
+	r.Handle("/upload", s.saml.RequireAccount(http.HandlerFunc(
+		handlers.NewUploader("/upload", s.config.Bucket, svc).Handler,
+	)))
 }

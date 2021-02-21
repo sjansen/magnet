@@ -8,7 +8,7 @@ import (
 	"github.com/sjansen/magnet/internal/pages"
 )
 
-// Profile shows user attributes when SCS isn't enabled.
+// Profile shows information about the current user.
 func Profile(w http.ResponseWriter, r *http.Request) {
 	var attrs samlsp.Attributes
 	s := samlsp.SessionFromContext(r.Context())

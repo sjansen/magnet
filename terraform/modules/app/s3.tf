@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "logs" {
-  bucket = "${var.dns_name}-logs"
+  bucket = "${local.bucket_prefix}-logs"
   acl    = "log-delivery-write"
   tags   = var.tags
 
@@ -27,9 +27,16 @@ resource "aws_s3_bucket" "logs" {
 }
 
 resource "aws_s3_bucket" "media" {
-  bucket = "${var.dns_name}-media"
+  bucket = "${local.bucket_prefix}-media"
   tags   = var.tags
 
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["POST"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 300
+  }
   lifecycle_rule {
     id                                     = "cleanup"
     enabled                                = true

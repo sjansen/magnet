@@ -7,6 +7,7 @@ import (
 
 var _ Response = &PrefixPage{}
 
+// PrefixPage enables browsing to specific objects.
 type PrefixPage struct {
 	BrowsePage
 	Prefixes []string

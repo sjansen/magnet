@@ -76,6 +76,7 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 				Size:      humanize.Bytes(uint64(*object.Size)),
 			}
 			page.Key = path
+			page.Title = path
 
 			pages.WriteResponse(w, page)
 			return
@@ -86,6 +87,7 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 		Prefixes: make([]string, 0, len(result.CommonPrefixes)),
 		Objects:  make(map[string]string, len(result.Contents)),
 	}
+	page.Title = path
 	page.Key = path
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)

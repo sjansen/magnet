@@ -97,7 +97,6 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   origin {
     domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.default.invoke_url, "https://"), "/default")
-    origin_path = "/default"
     origin_id   = "APIGW"
     custom_origin_config {
       http_port              = "80"

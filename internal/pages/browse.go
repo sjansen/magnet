@@ -4,16 +4,19 @@ import (
 	"strings"
 )
 
+// BrowseHeader is shown at the top of bucket browser pages.
 type BrowseHeader struct {
 	Head []Href
 	Tail string
 }
 
+// BrowsePage provides common content for bucket browser pages.
 type BrowsePage struct {
 	Page
 	Key string
 }
 
+// Header converts a key or prefix to a bucket browser page header.
 func (p *BrowsePage) Header() *BrowseHeader {
 	parts := strings.Split(p.Key, "/")
 	dirs := len(parts) - 1

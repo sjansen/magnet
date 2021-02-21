@@ -7,6 +7,7 @@ import (
 
 var _ Response = &ObjectPage{}
 
+// ObjectPage displays metadata for a specific object.
 type ObjectPage struct {
 	BrowsePage
 	Timestamp string
