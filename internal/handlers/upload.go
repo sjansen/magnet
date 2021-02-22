@@ -36,9 +36,16 @@ func (up *Uploader) Handler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	credentials := &s3form.Credentials{
+		AccessKeyID:     creds.AccessKeyID,
+		SecretAccessKey: creds.SecretAccessKey,
+		SessionToken:    creds.SessionToken,
+	}
+
+	now := time.Now()
+	expiration := now.Add(30 * time.Minute)
 
 	// TODO use sync.Pool to reuse entropy source
-	now := time.Now()
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(now.UnixNano())), 0)
 	ulid, err := ulid.New(ulid.Timestamp(now), entropy)
 	if err != nil {
@@ -46,13 +53,13 @@ func (up *Uploader) Handler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	prefix := "inbox/" + ulid.String() + "/"
 
 	region := up.svc.Client.SigningRegion
 	bucket := up.bkt
-	expiration := now.Add(30 * time.Minute)
 	form, err := s3form.New(region, bucket).
-		Prefix("inbox/"+ulid.String()+"/").
-		Sign(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken, expiration)
+		Prefix(prefix).
+		Sign(credentials, expiration)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)

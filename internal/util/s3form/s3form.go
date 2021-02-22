@@ -16,6 +16,12 @@ import (
 
 var now = time.Now
 
+type Credentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+}
+
 // Form is used to create a SignedForm.
 type Form struct {
 	region     string
@@ -83,7 +89,7 @@ func (f *Form) Prefix(prefix string) *Form {
 }
 
 // Sign creates a new SignedForm.
-func (f *Form) Sign(accessKeyID, secretAccessKey, sessionToken string, expiration time.Time) (*SignedForm, error) {
+func (f *Form) Sign(credentials *Credentials, expiration time.Time) (*SignedForm, error) {
 	tmp := &Form{
 		region:     f.region,
 		bucket:     f.bucket,
@@ -99,14 +105,14 @@ func (f *Form) Sign(accessKeyID, secretAccessKey, sessionToken string, expiratio
 	date := now.Format("20060102")
 	tmp.AddField("x-amz-credential",
 		fmt.Sprintf("%s/%s/%s/s3/aws4_request",
-			accessKeyID, date, tmp.region,
+			credentials.AccessKeyID, date, tmp.region,
 		),
 	)
 	tmp.AddField("x-amz-date",
 		now.Format("20060102T000000Z"),
 	)
-	if sessionToken != "" {
-		tmp.AddField("x-amz-security-token", sessionToken)
+	if credentials.SessionToken != "" {
+		tmp.AddField("x-amz-security-token", credentials.SessionToken)
 	}
 
 	json, err := json.Marshal(&policy{
@@ -120,7 +126,7 @@ func (f *Form) Sign(accessKeyID, secretAccessKey, sessionToken string, expiratio
 	base64.StdEncoding.Encode(policy, json)
 	tmp.fields["policy"] = string(policy)
 
-	hmac1 := hmac.New(sha256.New, []byte("AWS4"+secretAccessKey))
+	hmac1 := hmac.New(sha256.New, []byte("AWS4"+credentials.SecretAccessKey))
 	if _, err := hmac1.Write([]byte(date)); err != nil {
 		return nil, err
 	}

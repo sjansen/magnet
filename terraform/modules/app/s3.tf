@@ -45,6 +45,18 @@ resource "aws_s3_bucket" "media" {
       days = 30
     }
   }
+  lifecycle_rule {
+    id                                     = "empty inbox"
+    enabled                                = true
+    prefix                                 = "inbox/"
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 7
+    }
+    noncurrent_version_expiration {
+      days = 7
+    }
+  }
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
