@@ -59,6 +59,7 @@ func (up *Uploader) Handler(w http.ResponseWriter, r *http.Request) {
 	bucket := up.bkt
 	form, err := s3form.New(region, bucket).
 		Prefix(prefix).
+		UseAccelerateEndpoint().
 		Sign(credentials, expiration)
 	if err != nil {
 		fmt.Println(err)

@@ -16,6 +16,7 @@ import (
 
 var now = time.Now
 
+// Credentials contains the AWS credentials used to sign the form.
 type Credentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
@@ -24,6 +25,8 @@ type Credentials struct {
 
 // Form is used to create a SignedForm.
 type Form struct {
+	useAccelerateEndpoint bool
+
 	region     string
 	bucket     string
 	fields     map[string]string
@@ -148,13 +151,28 @@ func (f *Form) Sign(credentials *Credentials, expiration time.Time) (*SignedForm
 	}
 	tmp.fields["x-amz-signature"] = hex.EncodeToString(signature.Sum(nil))
 
-	return &SignedForm{
-		action: fmt.Sprintf(
+	var action string
+	if f.useAccelerateEndpoint {
+		action = fmt.Sprintf(
+			"https://%s.s3-accelerate.dualstack.amazonaws.com",
+			f.bucket,
+		)
+	} else {
+		action = fmt.Sprintf(
 			"https://%s.s3.%s.amazonaws.com/",
 			f.bucket, f.region,
-		),
+		)
+	}
+	return &SignedForm{
+		action: action,
 		fields: tmp.fields,
 	}, nil
+}
+
+// UseAccelerateEndpoint enables S3 Transfer Acceleration.
+func (f *Form) UseAccelerateEndpoint() *Form {
+	f.useAccelerateEndpoint = true
+	return f
 }
 
 // Action provides the URL that should be used to upload a file.

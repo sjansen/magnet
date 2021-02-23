@@ -30,6 +30,7 @@ resource "aws_s3_bucket" "media" {
   bucket = "${local.bucket_prefix}-media"
   tags   = var.tags
 
+  acceleration_status = "Enabled"
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["POST"]
