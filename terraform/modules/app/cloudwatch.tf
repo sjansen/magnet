@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_log_group" "app" {
+resource "aws_cloudwatch_log_group" "web" {
   name = local.cloudwatch_lambda_prefix
   tags = var.tags
 

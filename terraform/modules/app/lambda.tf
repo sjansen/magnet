@@ -1,12 +1,12 @@
-resource "aws_lambda_function" "app" {
-  image_uri    = "${aws_ecr_repository.app.repository_url}:latest"
+resource "aws_lambda_function" "web" {
+  image_uri    = "${aws_ecr_repository.web.repository_url}:latest"
   package_type = "Image"
   tags         = var.tags
 
-  function_name = local.app_function_name
+  function_name = local.web_function_name
   memory_size   = 128
   publish       = true
-  role          = aws_iam_role.app.arn
+  role          = aws_iam_role.web.arn
   timeout       = 15
 
   environment {
@@ -26,14 +26,14 @@ resource "aws_lambda_function" "app" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.app,
+    aws_cloudwatch_log_group.web,
   ]
 }
 
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.app.function_name
+  function_name = aws_lambda_function.web.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.app.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.web.execution_arn}/*/*"
 }

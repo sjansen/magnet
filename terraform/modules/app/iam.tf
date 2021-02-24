@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "AssumeRole-lambda" {
   }
 }
 
-data "aws_iam_policy_document" "app" {
+data "aws_iam_policy_document" "web" {
   statement {
     actions = [
       "dynamodb:BatchGetItem",
@@ -48,10 +48,10 @@ data "aws_iam_policy_document" "app" {
   }
 }
 
-resource "aws_iam_policy" "app" {
+resource "aws_iam_policy" "web" {
   name   = "all-the-things"
   path   = "/"
-  policy = data.aws_iam_policy_document.app.json
+  policy = data.aws_iam_policy_document.web.json
 }
 
 resource "aws_iam_role" "apigw" {
@@ -61,8 +61,8 @@ resource "aws_iam_role" "apigw" {
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-apigw.json
 }
 
-resource "aws_iam_role" "app" {
-  name = local.app_iam_role_name
+resource "aws_iam_role" "web" {
+  name = local.web_iam_role_name
   tags = var.tags
 
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
@@ -73,17 +73,17 @@ resource "aws_iam_role_policy_attachment" "apigw" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
 
-resource "aws_iam_role_policy_attachment" "app" {
-  role       = aws_iam_role.app.name
-  policy_arn = aws_iam_policy.app.arn
+resource "aws_iam_role_policy_attachment" "web" {
+  role       = aws_iam_role.web.name
+  policy_arn = aws_iam_policy.web.arn
 }
 
-resource "aws_iam_role_policy_attachment" "app-logs" {
-  role       = aws_iam_role.app.name
+resource "aws_iam_role_policy_attachment" "web-logs" {
+  role       = aws_iam_role.web.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "app-xray" {
-  role       = aws_iam_role.app.name
+resource "aws_iam_role_policy_attachment" "web-xray" {
+  role       = aws_iam_role.web.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
 }
