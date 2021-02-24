@@ -16,8 +16,7 @@ type ObjectPage struct {
 
 // WriteContent writes an HTTP response body.
 func (p *ObjectPage) WriteContent(w io.Writer) {
-	err := tmpls.ExecuteTemplate(w, "object.html", p)
-	if err != nil {
+	if err := tmpls.ExecuteTemplate(w, "object.html", p); err != nil {
 		fmt.Println(err)
 	}
 }

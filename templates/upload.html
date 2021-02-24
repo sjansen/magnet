@@ -3,7 +3,43 @@
   {{range $name, $value := .Form.Fields }}
   <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
   {{end}}
-  <input type="file" name="file"><br />
-  <input type="submit" value="Upload" class="mt-4 px-4 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50">
+<div x-data="imageViewer()">
+  <div class="mb-2">
+    <template x-if="imageUrl">
+      <img :src="imageUrl"
+           class="rounded border border-gray-200 bg-gray-100 object-contain"
+           style="width: 300px; height: 200px;"
+      >
+    </template>
+    <template x-if="!imageUrl">
+      <div class="border rounded border-gray-200 bg-gray-100"
+           style="width: 300px; height: 200px;"
+      ></div>
+    </template>
+  </div>
+  <input type="file" name="file" accept="image/*" @change="fileChosen" class="m-2">
+  <input type="submit" value="Upload" class="m-2 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50">
+</div>
 </form>
+<script>
+  function imageViewer(src = '') {
+    return {
+      imageUrl: src,
+
+      fileChosen(event) {
+        this.fileToDataUrl(event, src => this.imageUrl = src)
+      },
+
+      fileToDataUrl(event, callback) {
+        if (! event.target.files.length) return
+
+        let file = event.target.files[0],
+            reader = new FileReader()
+
+        reader.readAsDataURL(file)
+        reader.onload = e => callback(e.target.result)
+      },
+    }
+  }
+</script>
 {{template "footer" .}}

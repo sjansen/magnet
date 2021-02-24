@@ -18,6 +18,12 @@ var icons map[string]string = map[string]string{
 	".jpg": "/icons/image.svg",
 	".mp3": "/icons/audio.svg",
 	".mp4": "/icons/video.svg",
+	".svg": "/icons/image.svg",
+}
+
+var validBrowsePrefixes = map[string]struct{}{
+	"inbox": {},
+	"media": {},
 }
 
 // Browser can be used to browse the objects in a bucket.
@@ -40,7 +46,9 @@ func NewBrowser(base string, bucket string, svc *s3.S3) *Browser {
 func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 	// TODO move trimming to router?
 	path := strings.TrimPrefix(r.URL.Path, b.base)
-	if !strings.HasPrefix(path, "media/") {
+	tmp := strings.SplitN(path, "/", 2)
+	_, ok := validBrowsePrefixes[tmp[0]]
+	if len(tmp) < 2 || !ok {
 		// TODO custom 404 page
 		w.WriteHeader(http.StatusNotFound)
 		return

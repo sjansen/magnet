@@ -17,8 +17,7 @@ type UploadPage struct {
 
 // WriteContent writes an HTTP response body.
 func (p *UploadPage) WriteContent(w io.Writer) {
-	err := tmpls.ExecuteTemplate(w, "upload.html", p)
-	if err != nil {
+	if err := tmpls.ExecuteTemplate(w, "upload.html", p); err != nil {
 		fmt.Println(err)
 	}
 }

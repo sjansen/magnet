@@ -16,8 +16,7 @@ type PrefixPage struct {
 
 // WriteContent writes an HTTP response body.
 func (p *PrefixPage) WriteContent(w io.Writer) {
-	err := tmpls.ExecuteTemplate(w, "prefix.html", p)
-	if err != nil {
+	if err := tmpls.ExecuteTemplate(w, "prefix.html", p); err != nil {
 		fmt.Println(err)
 	}
 }

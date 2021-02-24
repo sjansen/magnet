@@ -1,9 +1,9 @@
 {{template "header" .}}
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
   <div class="px-4 py-5 sm:px-6">
-  <h3 class="text-lg leading-6 font-medium text-gray-900">
-    Magnet
-  </h3>
+    <h3 class="text-lg leading-6 font-medium text-gray-900">
+      <a href="/">Build Info</a>
+    </h3>
   </div>
   <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="border-t bg-gray-200">
@@ -31,7 +31,9 @@
     </div>
   </div>
 </div>
-<div class="text-2xl text-center px-4 py-5 sm:px-6">
-  <a href="/browse/media/">Browse Media</a>
+<div class="text-xl sm:flex sm:flex-row sm:justify-around">
+  <a class="m-4 sm:m-6" href="/browse/inbox/">Browse Inbox</a>
+  <a class="m-4 sm:m-6" href="/browse/media/">Browse Media</a>
+  <a class="m-4 sm:m-6" href="/upload/">Upload Files</a>
 </div>
 {{template "footer" .}}

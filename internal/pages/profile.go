@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -14,5 +15,7 @@ type ProfilePage struct {
 
 // WriteContent writes an HTTP response body.
 func (p *ProfilePage) WriteContent(w io.Writer) {
-	tmpls.ExecuteTemplate(w, "profile.html", p)
+	if err := tmpls.ExecuteTemplate(w, "profile.html", p); err != nil {
+		fmt.Println(err)
+	}
 }

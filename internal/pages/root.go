@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -15,5 +16,7 @@ type RootPage struct {
 
 // WriteContent writes an HTTP response body.
 func (p *RootPage) WriteContent(w io.Writer) {
-	tmpls.ExecuteTemplate(w, "root.html", p)
+	if err := tmpls.ExecuteTemplate(w, "root.html", p); err != nil {
+		fmt.Println(err)
+	}
 }
