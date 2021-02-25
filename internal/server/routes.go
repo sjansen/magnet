@@ -33,10 +33,10 @@ func (s *Server) addRouter() {
 	r.Get("/", handlers.Root)
 	r.Mount("/saml/", s.saml)
 	r.Handle("/browse/*", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewBrowser("/browse/", s.config.Bucket, svc).Handler,
+		handlers.NewBrowser("/browse/", s.config, svc).Handler,
 	)))
 	r.Handle("/profile", s.saml.RequireAccount(http.HandlerFunc(handlers.Profile)))
 	r.Handle("/upload/", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewUploader("/upload/", s.config.Bucket, svc).Handler,
+		handlers.NewUploader("/upload/", s.config, svc).Handler,
 	)))
 }

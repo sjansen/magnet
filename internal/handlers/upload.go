@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/oklog/ulid/v2"
 
+	"github.com/sjansen/magnet/internal/config"
 	"github.com/sjansen/magnet/internal/pages"
 	"github.com/sjansen/magnet/internal/util/s3form"
 )
@@ -21,9 +22,9 @@ type Uploader struct {
 }
 
 // NewUploader creates a new object uploader.
-func NewUploader(base string, bucket string, svc *s3.S3) *Uploader {
+func NewUploader(base string, cfg *config.Config, svc *s3.S3) *Uploader {
 	return &Uploader{
-		bkt: bucket,
+		bkt: cfg.Bucket,
 		svc: svc,
 	}
 }

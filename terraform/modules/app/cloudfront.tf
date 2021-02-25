@@ -78,7 +78,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       path_pattern     = ordered_cache_behavior.value
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
       cached_methods   = ["GET", "HEAD", "OPTIONS"]
-      target_origin_id = "public-media"
+      target_origin_id = "s3-bucket"
 
       compress               = true
       default_ttl            = 86400
@@ -95,6 +95,28 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
   }
 
+  ordered_cache_behavior {
+    path_pattern     = "/inbox/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id = "s3-bucket"
+
+    compress               = true
+    default_ttl            = 86400
+    max_ttl                = 604800
+    min_ttl                = 0
+    viewer_protocol_policy = "https-only"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+    // TODO: replace with a trusted key group once supported by terraform
+    trusted_signers = ["self"]
+  }
+
   origin {
     domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.default.invoke_url, "https://"), "/default")
     origin_id   = "APIGW"
@@ -108,7 +130,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   origin {
     domain_name = aws_s3_bucket.media.bucket_regional_domain_name
-    origin_id   = "public-media"
+    origin_id   = "s3-bucket"
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
     }

@@ -11,13 +11,15 @@ resource "aws_lambda_function" "web" {
 
   environment {
     variables = {
-      MAGNET_SAML_CERTIFICATE  = aws_ssm_parameter.SAML_METADATA_URL.name
-      MAGNET_SAML_METADATA_URL = aws_ssm_parameter.SAML_METADATA_URL.name
-      MAGNET_SAML_PRIVATE_KEY  = aws_ssm_parameter.SAML_PRIVATE_KEY.name
-      MAGNET_SESSION_TABLE     = aws_dynamodb_table.sessions.name
-      MAGNET_SSM_PREFIX        = "/${local.ssm_prefix}/"
-      MAGNET_BUCKET            = aws_s3_bucket.media.id,
-      MAGNET_URL               = "https://${var.dns_name}/"
+      MAGNET_BUCKET                 = aws_s3_bucket.media.id,
+      MAGNET_CLOUDFRONT_KEY_ID      = "ssm"
+      MAGNET_CLOUDFRONT_PRIVATE_KEY = "ssm"
+      MAGNET_SAML_CERTIFICATE       = "ssm"
+      MAGNET_SAML_METADATA_URL      = "ssm"
+      MAGNET_SAML_PRIVATE_KEY       = "ssm"
+      MAGNET_SESSION_TABLE          = aws_dynamodb_table.sessions.name
+      MAGNET_SSM_PREFIX             = "/${local.ssm_prefix}/"
+      MAGNET_URL                    = "https://${var.dns_name}/"
     }
   }
 

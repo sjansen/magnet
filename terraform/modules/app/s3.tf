@@ -99,14 +99,11 @@ resource "aws_s3_bucket_policy" "media" {
     "Principal": {
       "AWS": "${aws_cloudfront_origin_access_identity.cdn.iam_arn}"
     },
-    "Resource": "${aws_s3_bucket.media.arn}/icons/*"
-  },{
-    "Effect":"Allow",
-    "Action": "s3:GetObject",
-    "Principal": {
-      "AWS": "${aws_cloudfront_origin_access_identity.cdn.iam_arn}"
-    },
-    "Resource": "${aws_s3_bucket.media.arn}/media/*"
+    "Resource": [
+      "${aws_s3_bucket.media.arn}/icons/*",
+      "${aws_s3_bucket.media.arn}/inbox/*",
+      "${aws_s3_bucket.media.arn}/media/*"
+    ]
   }]
 }
 EOF

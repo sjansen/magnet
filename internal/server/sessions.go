@@ -14,12 +14,12 @@ import (
 )
 
 const sessionCookieName = "sessionid"
-const sessionLifetime = 7 * 24 * time.Hour
+const sessionLifetime = 8 * time.Hour
 const trackerCookieName = "relaystate"
-const trackerLifetime = time.Hour
+const trackerLifetime = 5 * time.Minute
 
 func (s *Server) addSCS(relaystate, sessions scs.Store) {
-	domain := s.config.SAML.Root.URL.Hostname()
+	domain := s.config.Root.URL.Hostname()
 	s.useSCS = true
 
 	// relaystate
