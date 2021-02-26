@@ -19,6 +19,7 @@ import (
 var icons map[string]string = map[string]string{
 	"":     "/icons/generic.svg",
 	".gif": "/icons/image.svg",
+	".ico": "/icons/image.svg",
 	".jpg": "/icons/image.svg",
 	".mp3": "/icons/audio.svg",
 	".mp4": "/icons/video.svg",

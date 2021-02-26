@@ -72,6 +72,26 @@ resource "aws_cloudfront_distribution" "cdn" {
     bucket          = aws_s3_bucket.logs.bucket_regional_domain_name
   }
 
+  ordered_cache_behavior {
+    path_pattern     = "/favicon.ico"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id = "favicon"
+
+    compress               = false
+    default_ttl            = 86400
+    max_ttl                = 604800
+    min_ttl                = 0
+    viewer_protocol_policy = "https-only"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
   dynamic "ordered_cache_behavior" {
     for_each = toset(["/icons/*", "/media/*"])
     content {
@@ -80,7 +100,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       cached_methods   = ["GET", "HEAD", "OPTIONS"]
       target_origin_id = "s3-bucket"
 
-      compress               = true
+      compress               = false
       default_ttl            = 86400
       max_ttl                = 604800
       min_ttl                = 0
@@ -125,6 +145,15 @@ resource "aws_cloudfront_distribution" "cdn" {
       https_port             = "443"
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  origin {
+    domain_name = aws_s3_bucket.media.bucket_regional_domain_name
+    origin_id   = "favicon"
+    origin_path = "/icons"
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
     }
   }
 
