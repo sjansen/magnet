@@ -1,10 +1,19 @@
 {{template "header" .}}
 <form action="{{ .Form.Action }}" method="{{ .Form.Method }}" enctype="{{ .Form.Enctype }}">
-  {{range $name, $value := .Form.Fields }}
+  {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
   <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
-  {{end}}
-<div x-data="imageViewer()">
-  <div class="mb-2">
+  {{end}}{{end}}
+<div x-data="imageViewer()" class="md:flex md:flex-row-reverse float-left">
+  <div class="md:ml-4 md:flex-nogrow">
+    <label for="x-amz-meta-creator" class="block mb-2">Creator</label>
+    <input name="x-amz-meta-creator" id="x-amz-meta-creator" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:ring-purple-700 focus:border-purple-700">
+    <label for="x-amz-meta-license" class="block mb-2">License</label>
+    <input name="x-amz-meta-license" id="x-amz-meta-license" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:border-purple-700 focus:ring-purple-700">
+    <label for="x-amz-meta-source" class="block mb-2">Source</label>
+    <input name="x-amz-meta-source" id="x-amz-meta-source" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:ring-purple-700 focus:border-purple-700">
+    <input type="submit" value="Upload" class="block px-4 py-2 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:ring-purple-600">
+  </div>
+  <div class="mb-2" class="md:flex-none">
     <template x-if="imageUrl">
       <img :src="imageUrl"
            class="rounded border border-gray-200 bg-gray-100 object-contain"
@@ -16,9 +25,8 @@
            style="width: 300px; height: 200px;"
       ></div>
     </template>
+    <input type="file" name="file" accept="image/*" @change="fileChosen" class="m-2">
   </div>
-  <input type="file" name="file" accept="image/*" @change="fileChosen" class="m-2">
-  <input type="submit" value="Upload" class="m-2 px-4 py-2 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50">
 </div>
 </form>
 <script>

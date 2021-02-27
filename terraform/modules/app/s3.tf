@@ -71,8 +71,8 @@ resource "aws_s3_bucket" "media" {
 }
 
 resource "aws_s3_bucket_object" "favicon" {
-  bucket = aws_s3_bucket.media.id
-  key    = "/icons/favicon.ico"
+  bucket       = aws_s3_bucket.media.id
+  key          = "/icons/favicon.ico"
   content_type = "image/x-icon"
   etag         = filemd5("${path.module}/icons/favicon.ico")
   source       = "${path.module}/icons/favicon.ico"
@@ -81,8 +81,8 @@ resource "aws_s3_bucket_object" "favicon" {
 resource "aws_s3_bucket_object" "icons" {
   for_each = fileset(path.module, "icons/*.svg")
 
-  bucket = aws_s3_bucket.media.id
-  key    = each.key
+  bucket       = aws_s3_bucket.media.id
+  key          = each.key
   content_type = "image/svg+xml"
   etag         = filemd5("${path.module}/${each.key}")
   source       = "${path.module}/${each.key}"

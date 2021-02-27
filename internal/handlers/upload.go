@@ -61,6 +61,9 @@ func (up *Uploader) Handler(w http.ResponseWriter, r *http.Request) {
 	form, err := s3form.New(region, bucket).
 		Prefix(prefix).
 		UseAccelerateEndpoint().
+		AddField("x-amz-meta-creator", "", &s3form.StartsWith{}).
+		AddField("x-amz-meta-license", "", &s3form.StartsWith{}).
+		AddField("x-amz-meta-source", "", &s3form.StartsWith{}).
 		Sign(credentials, expiration)
 	if err != nil {
 		fmt.Println(err)

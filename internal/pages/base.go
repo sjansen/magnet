@@ -4,13 +4,18 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 )
 
 var tmpls *template.Template
 
 func init() {
 	fmt.Println("Parsing templates...")
-	tmpls = template.Must(template.ParseGlob("templates/*.html"))
+	tmpls = template.New("pages")
+	tmpls.Funcs(template.FuncMap{
+		"HasPrefix": strings.HasPrefix,
+	})
+	template.Must(tmpls.ParseGlob("templates/*.html"))
 }
 
 // Href is an HTML <a href="...">...</a>

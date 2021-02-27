@@ -104,9 +104,17 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 	if !hasFinalSlash && len(result.CommonPrefixes) == 0 && len(result.Contents) == 1 {
 		object := result.Contents[0]
 		if path == *object.Key {
+			result, err := b.client.HeadObject(&s3.HeadObjectInput{
+				Bucket: aws.String(b.bucket),
+				Key:    object.Key,
+			})
+			if err != nil {
+				fmt.Println(err)
+			}
 			page := &pages.ObjectPage{
 				Timestamp: object.LastModified.String(),
 				Size:      humanize.Bytes(uint64(*object.Size)),
+				Metadata:  result.Metadata,
 			}
 			page.Key = path
 			page.Title = path

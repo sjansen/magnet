@@ -12,6 +12,7 @@ type ObjectPage struct {
 	BrowsePage
 	Timestamp string
 	Size      string
+	Metadata  map[string]*string
 }
 
 // WriteContent writes an HTTP response body.
