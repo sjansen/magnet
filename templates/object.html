@@ -14,18 +14,24 @@
     <div class="border-t bg-gray-200">
       <dl>
         <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-500">MIME Type</dt>
+          <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
+            {{ .MimeType }}
+          </dd>
+        </div>
+        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-500">Size</dt>
           <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
             {{ .Size }}
           </dd>
         </div>
-        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-500">Timestamp</dt>
           <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
             {{ .Timestamp }}
           </dd>
         </div>
-        {{ $even := false }}
+        {{ $even := true }}
         {{range $key, $value := .Metadata }}
         <div class="{{if $even = not $even }}bg-gray-50{{ else }}bg-white{{ end }} px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-500">{{ $key }}</dt>

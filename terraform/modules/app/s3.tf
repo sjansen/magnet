@@ -108,8 +108,8 @@ resource "aws_s3_bucket_policy" "media" {
     },
     "Resource": [
       "${aws_s3_bucket.media.arn}/icons/*",
-      "${aws_s3_bucket.media.arn}/inbox/*",
-      "${aws_s3_bucket.media.arn}/media/*"
+      "${aws_s3_bucket.media.arn}/media/*",
+      "${aws_s3_bucket.media.arn}/review/*"
     ]
   }]
 }

@@ -115,26 +115,29 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
   }
 
-  ordered_cache_behavior {
-    path_pattern     = "/inbox/*"
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "s3-bucket"
+  dynamic "ordered_cache_behavior" {
+    for_each = toset(["/inbox/*", "/review/*"])
+    content {
+      path_pattern     = ordered_cache_behavior.value
+      allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+      cached_methods   = ["GET", "HEAD", "OPTIONS"]
+      target_origin_id = "s3-bucket"
 
-    compress               = true
-    default_ttl            = 86400
-    max_ttl                = 604800
-    min_ttl                = 0
-    viewer_protocol_policy = "https-only"
+      compress               = false
+      default_ttl            = 86400
+      max_ttl                = 604800
+      min_ttl                = 0
+      viewer_protocol_policy = "https-only"
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
+      forwarded_values {
+        query_string = false
+        cookies {
+          forward = "none"
+        }
       }
+      // TODO: replace with a trusted key group once supported by terraform
+      trusted_signers = ["self"]
     }
-    // TODO: replace with a trusted key group once supported by terraform
-    trusted_signers = ["self"]
   }
 
   origin {

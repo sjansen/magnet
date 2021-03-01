@@ -27,8 +27,8 @@ var icons map[string]string = map[string]string{
 }
 
 var validBrowsePrefixes = map[string]struct{}{
-	"inbox": {},
-	"media": {},
+	"media":  {},
+	"review": {},
 }
 
 // Browser can be used to browse the objects in a bucket.
@@ -104,7 +104,7 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 	if !hasFinalSlash && len(result.CommonPrefixes) == 0 && len(result.Contents) == 1 {
 		object := result.Contents[0]
 		if path == *object.Key {
-			result, err := b.client.HeadObject(&s3.HeadObjectInput{
+			head, err := b.client.HeadObject(&s3.HeadObjectInput{
 				Bucket: aws.String(b.bucket),
 				Key:    object.Key,
 			})
@@ -112,9 +112,10 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 			page := &pages.ObjectPage{
-				Timestamp: object.LastModified.String(),
+				Metadata:  head.Metadata,
+				MimeType:  aws.StringValue(head.ContentType),
 				Size:      humanize.Bytes(uint64(*object.Size)),
-				Metadata:  result.Metadata,
+				Timestamp: object.LastModified.String(),
 			}
 			page.Key = path
 			page.Title = path

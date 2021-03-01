@@ -3,6 +3,7 @@ package pages
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -41,4 +42,18 @@ func (p *Page) StatusCode() int {
 		return http.StatusOK
 	}
 	return p.Status
+}
+
+// Response is an HTTP response.
+type Response interface {
+	ContentType() string
+	StatusCode() int
+	WriteContent(w io.Writer)
+}
+
+// WriteResponse writes an HTTP response.
+func WriteResponse(w http.ResponseWriter, resp Response) {
+	w.Header().Set("Content-Type", resp.ContentType())
+	w.WriteHeader(resp.StatusCode())
+	resp.WriteContent(w)
 }
