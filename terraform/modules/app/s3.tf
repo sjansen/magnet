@@ -47,7 +47,7 @@ resource "aws_s3_bucket" "media" {
     }
   }
   lifecycle_rule {
-    id                                     = "empty inbox"
+    id                                     = "clean inbox"
     enabled                                = true
     prefix                                 = "inbox/"
     abort_incomplete_multipart_upload_days = 3
@@ -56,6 +56,18 @@ resource "aws_s3_bucket" "media" {
     }
     noncurrent_version_expiration {
       days = 7
+    }
+  }
+  lifecycle_rule {
+    id                                     = "clean review"
+    enabled                                = true
+    prefix                                 = "review/"
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 45
+    }
+    noncurrent_version_expiration {
+      days = 45
     }
   }
   server_side_encryption_configuration {
@@ -72,7 +84,7 @@ resource "aws_s3_bucket" "media" {
 
 resource "aws_s3_bucket_object" "favicon" {
   bucket       = aws_s3_bucket.media.id
-  key          = "/icons/favicon.ico"
+  key          = "magnet/icons/favicon.ico"
   content_type = "image/x-icon"
   etag         = filemd5("${path.module}/icons/favicon.ico")
   source       = "${path.module}/icons/favicon.ico"
@@ -82,14 +94,14 @@ resource "aws_s3_bucket_object" "icons" {
   for_each = fileset(path.module, "icons/*.svg")
 
   bucket       = aws_s3_bucket.media.id
-  key          = each.key
+  key          = "magnet/${each.key}"
   content_type = "image/svg+xml"
   etag         = filemd5("${path.module}/${each.key}")
   source       = "${path.module}/${each.key}"
 }
 
 resource "aws_s3_bucket_object" "prefixes" {
-  for_each = toset(["inbox/", "media/", "review/"])
+  for_each = toset(["inbox/", "review/", "static/"])
 
   bucket = aws_s3_bucket.media.id
   key    = each.key
@@ -107,9 +119,9 @@ resource "aws_s3_bucket_policy" "media" {
       "AWS": "${aws_cloudfront_origin_access_identity.cdn.iam_arn}"
     },
     "Resource": [
-      "${aws_s3_bucket.media.arn}/icons/*",
-      "${aws_s3_bucket.media.arn}/media/*",
-      "${aws_s3_bucket.media.arn}/review/*"
+      "${aws_s3_bucket.media.arn}/magnet/icons/*",
+      "${aws_s3_bucket.media.arn}/review/*",
+      "${aws_s3_bucket.media.arn}/static/*"
     ]
   }]
 }

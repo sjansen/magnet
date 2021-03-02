@@ -8,8 +8,8 @@ import (
 	"github.com/sjansen/magnet/internal/pages"
 )
 
-// Profile shows information about the current user.
-func Profile(w http.ResponseWriter, r *http.Request) {
+// WhoAmI shows information about the current user.
+func WhoAmI(w http.ResponseWriter, r *http.Request) {
 	var attrs samlsp.Attributes
 	s := samlsp.SessionFromContext(r.Context())
 	if sa, ok := s.(samlsp.SessionWithAttributes); ok {

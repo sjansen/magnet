@@ -17,17 +17,18 @@ import (
 )
 
 var icons map[string]string = map[string]string{
-	"":     "/icons/generic.svg",
-	".gif": "/icons/image.svg",
-	".ico": "/icons/image.svg",
-	".jpg": "/icons/image.svg",
-	".mp3": "/icons/audio.svg",
-	".mp4": "/icons/video.svg",
-	".svg": "/icons/image.svg",
+	"":     "/magnet/icons/generic.svg",
+	".gif": "/magnet/icons/image.svg",
+	".ico": "/magnet/icons/image.svg",
+	".jpg": "/magnet/icons/image.svg",
+	".mp3": "/magnet/icons/audio.svg",
+	".mp4": "/magnet/icons/video.svg",
+	".png": "/magnet/icons/image.svg",
+	".svg": "/magnet/icons/image.svg",
 }
 
 var validBrowsePrefixes = map[string]struct{}{
-	"media":  {},
+	"static": {},
 	"review": {},
 }
 

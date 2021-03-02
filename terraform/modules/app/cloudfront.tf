@@ -93,7 +93,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   dynamic "ordered_cache_behavior" {
-    for_each = toset(["/icons/*", "/media/*"])
+    for_each = toset(["/magnet/icons/*", "/static/*"])
     content {
       path_pattern     = ordered_cache_behavior.value
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -154,7 +154,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   origin {
     domain_name = aws_s3_bucket.media.bucket_regional_domain_name
     origin_id   = "favicon"
-    origin_path = "/icons"
+    origin_path = "/magnet/icons"
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
     }
