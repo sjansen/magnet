@@ -1,0 +1,9 @@
+archives:
+- format: binary
+
+builds:
+- id: default
+  skip: true
+
+source:
+  enabled: true

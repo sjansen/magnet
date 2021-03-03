@@ -3,6 +3,7 @@
 /.vscode/
 /archive/
 /data/
+/dist/
 .terraform/
 node_modules/
 
@@ -21,4 +22,5 @@ terragrunt-local.json
 # Patterns
 .*.sw[op]
 *-generated.tf
+*.tgz
 *.zip

@@ -31,6 +31,10 @@ run:
 	@scripts/docker-up-dynamodb
 
 
+snapshot:
+	git archive -o snapshot.tgz HEAD
+
+
 test:
 	@scripts/docker-up-test
 	@echo ' ____'
