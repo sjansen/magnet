@@ -1,0 +1,11 @@
+# Directories
+.git/
+data/
+dist/
+docs/
+spikes/
+terraform/
+
+# Patterns
+docker*
+TODO*

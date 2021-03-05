@@ -1,10 +1,21 @@
 version: '2.1'
 services:
+  dynamodb:
+    image: 'amazon/dynamodb-local'
   go:
+    build:
+      context: ./docker/go
     command: ./scripts/run-all-tests
+    depends_on:
+      - dynamodb
     environment:
+      AWS_REGION: us-east-2
+      GO111MODULE: "on"
+      MAGNET_LISTEN: "0.0.0.0:8080"
+      MAGNET_SESSION_CREATE: "true"
       MAGNET_SESSION_ENDPOINT: "http://dynamodb:8000"
+      MAGNET_SESSION_TABLE: "magnet-sessions"
     volumes:
-     - .:/go/src/github.com/sjansen/magnet
-     - "${GOPATH:-/tmp}/pkg/mod:/go/pkg/mod"
+      - .:/go/src/github.com/sjansen/magnet
+      - "${GOPATH:-/tmp}/pkg/mod:/go/pkg/mod"
     working_dir: /go/src/github.com/sjansen/magnet

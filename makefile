@@ -1,7 +1,8 @@
-.PHONY:  default  check-env  check-working-tree  login  push-staging  run  test
+.PHONY:  default  check-env  check-working-tree  login
+.PHONY:  push-staging  snapshot  start  test
 
 
-default: run
+default: start
 
 
 check-env:
@@ -10,9 +11,9 @@ ifndef AWSCLI
 endif
 
 
-check-working-tree:
-	@git diff-index --quiet HEAD -- \
-	|| (echo "Working tree is dirty. Commit all changes."; false)
+
+dynamodb:
+	@scripts/docker-up-dynamodb
 
 
 login: check-env
@@ -23,16 +24,16 @@ login: check-env
 	    `scripts/get-ecr-registry`
 
 
-push-staging: check-working-tree login
+push-staging: login
 	@scripts/push-staging
-
-
-run:
-	@scripts/docker-up-dynamodb
 
 
 snapshot:
 	git archive -o snapshot.tgz HEAD
+
+
+start:
+	foreman start -e /dev/null
 
 
 test:

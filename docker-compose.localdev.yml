@@ -1,24 +1,11 @@
 version: '2.1'
 services:
   dynamodb:
+    image: 'amazon/dynamodb-local'
     command: "-jar DynamoDBLocal.jar -dbPath /data/dynamodb-local -sharedDb"
     environment:
       AWS_REGION: us-east-2
+    ports:
+      - "8000:8000"
     volumes:
       - ./data/dynamodb-local:/data/dynamodb-local
-  go:
-    command: go run main.go runserver
-    depends_on:
-      - dynamodb
-    environment:
-      AWS_REGION: us-east-2
-      MAGNET_SESSION_CREATE: "true"
-      MAGNET_SESSION_ENDPOINT: "http://dynamodb:8000"
-      MAGNET_SESSION_TABLE: "magnet-sessions"
-      MAGNET_LISTEN: "0.0.0.0:8080"
-    ports:
-      - "8080:8080"
-    volumes:
-     - .:/go/src/github.com/sjansen/magnet
-     - "${GOPATH:-/tmp}/pkg/mod:/go/pkg/mod"
-    working_dir: /go/src/github.com/sjansen/magnet

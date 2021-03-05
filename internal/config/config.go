@@ -74,7 +74,9 @@ func (cfg *Config) readSecrets() error {
 		case "CLOUDFRONT_KEY_ID":
 			cfg.CloudFront.KeyID = *param.Value
 		case "CLOUDFRONT_PRIVATE_KEY":
-			cfg.CloudFront.PrivateKey.Unmarshal(*param.Value)
+			if err := cfg.CloudFront.PrivateKey.Unmarshal(*param.Value); err != nil {
+				return err
+			}
 		case "SAML_CERTIFICATE":
 			cfg.SAML.Certificate = *param.Value
 		case "SAML_METADATA_URL":

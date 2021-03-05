@@ -1,6 +1,9 @@
 #!/bin/bash
-
 set -e -u -o pipefail
+
+
+git diff-index --quiet HEAD -- \
+|| (echo "Working tree is dirty. Commit all changes."; false)
 
 FUNC=$(scripts/get-function-name)
 GITSHA=$(git rev-parse HEAD)
@@ -8,12 +11,13 @@ REPO=$(scripts/get-ecr-repository-url)
 TAG=${REPO}:${GITSHA}
 NAME=$(echo $REPO | sed 's|.*/||')
 
+
 docker build \
     --build-arg=GITSHA=${GITSHA} \
     --build-arg=TIMESTAMP="$(date -u '+%Y-%m-%d %H:%M:%S +0000 UTC')" \
     --compress --force-rm --pull \
     -t $TAG \
-    -f ./Dockerfile \
+    -f ./docker/web/Dockerfile \
     .
 
 docker push $TAG

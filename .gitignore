@@ -8,9 +8,8 @@
 node_modules/
 
 # Files
-/.env
+/.env.local
 /docker-compose.override.yml
-/local.env
 /magnet
 /TODO
 .DS_Store

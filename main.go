@@ -5,12 +5,26 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/joho/godotenv"
 
 	"github.com/sjansen/magnet/internal/build"
 	"github.com/sjansen/magnet/internal/config"
 	"github.com/sjansen/magnet/internal/server"
 )
+
+func init() {
+	env := os.Getenv("MAGNET_ENV")
+	if "" == env {
+		env = "development"
+	}
+
+	_ = godotenv.Load(".env." + env + ".local")
+	if env != "test" {
+		_ = godotenv.Load(".env.local")
+	}
+	_ = godotenv.Load(".env." + env)
+	_ = godotenv.Load()
+}
 
 type context struct {
 	cfg *config.Config
