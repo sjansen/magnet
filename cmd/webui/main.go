@@ -6,7 +6,7 @@ import (
 
 	"github.com/sjansen/magnet/internal/build"
 	"github.com/sjansen/magnet/internal/config"
-	"github.com/sjansen/magnet/internal/server"
+	"github.com/sjansen/magnet/internal/webui/server"
 )
 
 func main() {

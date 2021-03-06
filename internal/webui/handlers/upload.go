@@ -10,8 +10,8 @@ import (
 	"github.com/oklog/ulid/v2"
 
 	"github.com/sjansen/magnet/internal/config"
-	"github.com/sjansen/magnet/internal/pages"
 	"github.com/sjansen/magnet/internal/util/s3form"
+	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
 // Uploader can be used to add objects to a bucket.

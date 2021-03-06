@@ -5,7 +5,7 @@ import (
 
 	"github.com/crewjam/saml/samlsp"
 
-	"github.com/sjansen/magnet/internal/pages"
+	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
 // WhoAmI shows information about the current user.

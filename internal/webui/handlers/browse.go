@@ -13,7 +13,7 @@ import (
 	"github.com/dustin/go-humanize"
 
 	"github.com/sjansen/magnet/internal/config"
-	"github.com/sjansen/magnet/internal/pages"
+	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
 var icons map[string]string = map[string]string{

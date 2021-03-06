@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	cmw "github.com/go-chi/chi/middleware"
 
-	"github.com/sjansen/magnet/internal/handlers"
+	"github.com/sjansen/magnet/internal/webui/handlers"
 )
 
 func (s *Server) addRouter() {

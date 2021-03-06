@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/sjansen/magnet/internal/server"
+	"github.com/sjansen/magnet/internal/webui/server"
 )
 
 type runserverCmd struct{}

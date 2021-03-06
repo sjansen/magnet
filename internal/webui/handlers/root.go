@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sjansen/magnet/internal/build"
-	"github.com/sjansen/magnet/internal/pages"
+	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
 // Root is the app's root page.
