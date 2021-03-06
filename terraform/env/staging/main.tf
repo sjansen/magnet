@@ -6,7 +6,7 @@ module "app" {
   dns-name             = var.dns-name
   dns-zone             = var.dns-zone
   ssm-prefix           = module.bootstrap.ssm-prefix
-  webui-repo-url       = module.bootstrap.webui-repo-url
+  repo-urls            = module.bootstrap.repo-urls
 
   providers = {
     aws           = aws

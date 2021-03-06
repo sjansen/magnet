@@ -5,8 +5,7 @@ import (
 	"os"
 
 	"github.com/sjansen/magnet/internal/build"
-	"github.com/sjansen/magnet/internal/config"
-	"github.com/sjansen/magnet/internal/webui/server"
+	"github.com/sjansen/magnet/internal/move"
 )
 
 func main() {
@@ -18,17 +17,5 @@ func main() {
 	fmt.Println("GitSHA:", build.GitSHA)
 	fmt.Println("Timestamp:", build.Timestamp)
 
-	cfg, err := config.New()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
-
-	s, err := server.New(cfg)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
-
-	s.StartLambdaHandler()
+	move.StartLambdaHandler()
 }

@@ -10,11 +10,11 @@ variable "dns-zone" {
   type = string
 }
 
-variable "ssm-prefix" {
-  type = string
+variable "repo-urls" {
+  type = map(string)
 }
 
-variable "webui-repo-url" {
+variable "ssm-prefix" {
   type = string
 }
 

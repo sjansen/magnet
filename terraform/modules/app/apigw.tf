@@ -27,6 +27,7 @@ resource "aws_api_gateway_deployment" "webui" {
   }
   triggers = {
     redeployment = sha1(jsonencode([
+      aws_lambda_function.webui.version,
       aws_api_gateway_integration.webui.id,
       aws_api_gateway_integration.webui_root.id,
       aws_api_gateway_method.webui.id,

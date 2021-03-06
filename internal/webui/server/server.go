@@ -76,12 +76,6 @@ func New(cfg *config.Config) (*Server, error) {
 	return s, nil
 }
 
-// HandleLambda starts the server waiting for events from AWS Lambda.
-func (s *Server) HandleLambda() {
-	s.lambda = chiadapter.New(s.router)
-	lambda.Start(s.LambdaHandler)
-}
-
 // LambdaHandler processes a single Lambda event.
 func (s *Server) LambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	return s.lambda.ProxyWithContext(ctx, req)
@@ -110,4 +104,10 @@ func (s *Server) ListenAndServe() error {
 		return err
 	}
 	return nil
+}
+
+// StartLambdaHandler starts the server waiting for events from AWS Lambda.
+func (s *Server) StartLambdaHandler() {
+	s.lambda = chiadapter.New(s.router)
+	lambda.Start(s.LambdaHandler)
 }

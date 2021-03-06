@@ -1,3 +1,10 @@
+locals {
+  lambda-roles = {
+    move  = "${var.dns-name}-move",
+    webui = "${var.dns-name}-webui",
+  }
+}
+
 data "aws_iam_policy_document" "AssumeRole-apigw" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -67,9 +74,10 @@ resource "aws_iam_role" "apigw" {
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-apigw.json
 }
 
-resource "aws_iam_role" "webui" {
-  name = var.dns-name
-  tags = var.tags
+resource "aws_iam_role" "x" {
+  for_each = local.lambda-roles
+  name     = each.value
+  tags     = var.tags
 
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
 }
@@ -80,16 +88,18 @@ resource "aws_iam_role_policy_attachment" "apigw" {
 }
 
 resource "aws_iam_role_policy_attachment" "webui" {
-  role       = aws_iam_role.webui.name
+  role       = aws_iam_role.x["webui"].name
   policy_arn = aws_iam_policy.webui.arn
 }
 
-resource "aws_iam_role_policy_attachment" "webui-logs" {
-  role       = aws_iam_role.webui.name
+resource "aws_iam_role_policy_attachment" "lambda-logs" {
+  for_each   = toset([for x in aws_iam_role.x : x.name])
+  role       = each.value
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "webui-xray" {
-  role       = aws_iam_role.webui.name
+resource "aws_iam_role_policy_attachment" "lambda-xray" {
+  for_each   = toset([for x in aws_iam_role.x : x.name])
+  role       = each.value
   policy_arn = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
 }

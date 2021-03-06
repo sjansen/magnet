@@ -6,9 +6,14 @@ git diff-index --quiet HEAD -- \
 || (echo "Working tree is dirty. Commit all changes."; false)
 
 
-FUNC=$(scripts/get-staging-fn-name)
-REPO=$(scripts/get-staging-repo-url)
+FUNC=$(scripts/get-staging-fn-name move)
+REPO=$(scripts/get-staging-repo-url move)
+aws lambda update-function-code \
+    --function-name ${FUNC} \
+    --image-uri ${REPO}:latest
 
+FUNC=$(scripts/get-staging-fn-name webui)
+REPO=$(scripts/get-staging-repo-url webui)
 aws lambda update-function-code \
     --function-name ${FUNC} \
     --image-uri ${REPO}:latest

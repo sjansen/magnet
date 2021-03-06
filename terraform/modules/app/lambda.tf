@@ -1,12 +1,32 @@
+resource "aws_lambda_function" "move" {
+  image_uri    = "${var.repo-urls["move"]}:latest"
+  package_type = "Image"
+  tags         = var.tags
+
+  function_name = local.move-fn-name
+  memory_size   = 128
+  publish       = true
+  role          = aws_iam_role.x["move"].arn
+  timeout       = 15
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.move,
+  ]
+}
+
 resource "aws_lambda_function" "webui" {
-  image_uri    = "${var.webui-repo-url}:latest"
+  image_uri    = "${var.repo-urls["webui"]}:latest"
   package_type = "Image"
   tags         = var.tags
 
   function_name = local.webui-fn-name
   memory_size   = 128
   publish       = true
-  role          = aws_iam_role.webui.arn
+  role          = aws_iam_role.x["webui"].arn
   timeout       = 15
 
   environment {
@@ -35,7 +55,15 @@ resource "aws_lambda_function" "webui" {
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = local.webui-fn-name
+  function_name = aws_lambda_function.webui.arn
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.webui.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "lambda" {
+  statement_id  = "AllowExecutionFromS3"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.move.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.media.arn
 }

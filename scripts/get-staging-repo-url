@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd terraform/env/staging/ &>/dev/null
-terragrunt output -raw webui-repo-url 2>/dev/null
+terragrunt output -raw "$1"-repo-url 2>/dev/null

@@ -6,5 +6,6 @@ locals {
   dns-name-dashed      = replace(var.dns-name, "/[^-_a-zA-Z0-9]+/", "-")
   dns-name-underscored = replace(var.dns-name, "/[^-_a-zA-Z0-9]+/", "_")
 
-  webui-fn-name = local.dns-name-underscored
+  move-fn-name  = "${local.dns-name-underscored}-move"
+  webui-fn-name = "${local.dns-name-underscored}-webui"
 }

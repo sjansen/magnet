@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd terraform/env/staging/ &>/dev/null
-terragrunt output -raw webui-fn-name 2>/dev/null
+terragrunt output -raw "$1"-fn-name 2>/dev/null

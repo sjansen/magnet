@@ -1,5 +1,11 @@
-resource "aws_ecr_lifecycle_policy" "webui" {
-  repository = aws_ecr_repository.webui.name
+locals {
+  repos = toset(["move", "webui"])
+}
+
+resource "aws_ecr_lifecycle_policy" "x" {
+  for_each = local.repos
+
+  repository = aws_ecr_repository.x[each.key].name
   policy     = <<EOF
 {
     "rules": [{
@@ -30,14 +36,18 @@ resource "aws_ecr_lifecycle_policy" "webui" {
 EOF
 }
 
-resource "aws_ecr_repository" "webui" {
-  name = "${var.dns-name}-webui"
+resource "aws_ecr_repository" "x" {
+  for_each = local.repos
+
+  name = "${var.dns-name}-${each.key}"
   tags = var.tags
 
   image_tag_mutability = "IMMUTABLE"
 }
 
-resource "aws_ecr_repository_policy" "webui" {
-  repository = aws_ecr_repository.webui.name
-  policy     = data.aws_iam_policy_document.webui-ecr.json
+resource "aws_ecr_repository_policy" "x" {
+  for_each = local.repos
+
+  repository = aws_ecr_repository.x[each.key].name
+  policy     = data.aws_iam_policy_document.ecr-lambda.json
 }

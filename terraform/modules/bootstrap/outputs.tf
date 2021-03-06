@@ -1,15 +1,21 @@
 output "docker-registry" {
-  value = split("/", aws_ecr_repository.webui.repository_url)[0]
+  value = split("/", aws_ecr_repository.x["webui"].repository_url)[0]
 }
 
 output "ssm-prefix" {
   value = local.ssm-prefix
 }
 
-output "webui-repo-arn" {
-  value = aws_ecr_repository.webui.arn
+output "repo-arns" {
+  value = {
+    move  = aws_ecr_repository.x["move"].arn
+    webui = aws_ecr_repository.x["webui"].arn
+  }
 }
 
-output "webui-repo-url" {
-  value = aws_ecr_repository.webui.repository_url
+output "repo-urls" {
+  value = {
+    move  = aws_ecr_repository.x["move"].repository_url
+    webui = aws_ecr_repository.x["webui"].repository_url
+  }
 }

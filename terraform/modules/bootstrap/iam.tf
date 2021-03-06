@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "webui-ecr" {
+data "aws_iam_policy_document" "ecr-lambda" {
   statement {
     sid = "LambdaECRImageRetrievalPolicy"
     actions = [

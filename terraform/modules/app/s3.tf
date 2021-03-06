@@ -82,6 +82,18 @@ resource "aws_s3_bucket" "logs" {
   }
 }
 
+resource "aws_s3_bucket_notification" "media" {
+  bucket = aws_s3_bucket.media.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.move.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "inbox/"
+  }
+
+  depends_on = [aws_lambda_permission.lambda]
+}
+
 resource "aws_s3_bucket_object" "favicon" {
   bucket       = aws_s3_bucket.media.id
   key          = "magnet/icons/favicon.ico"
