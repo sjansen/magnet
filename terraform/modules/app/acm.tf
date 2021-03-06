@@ -1,5 +1,5 @@
 resource "aws_acm_certificate" "apigw-cert" {
-  domain_name       = var.dns_name
+  domain_name       = var.dns-name
   validation_method = "DNS"
   tags              = var.tags
 }
@@ -7,7 +7,7 @@ resource "aws_acm_certificate" "apigw-cert" {
 
 resource "aws_acm_certificate" "cloudfront-cert" {
   provider          = aws.us-east-1
-  domain_name       = var.dns_name
+  domain_name       = var.dns-name
   validation_method = "DNS"
   tags              = var.tags
 }

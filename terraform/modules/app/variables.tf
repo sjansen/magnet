@@ -1,8 +1,20 @@
-variable "dns_name" {
+variable "cloudwatch-retention" {
+  type = number
+}
+
+variable "dns-name" {
   type = string
 }
 
-variable "dns_zone" {
+variable "dns-zone" {
+  type = string
+}
+
+variable "ssm-prefix" {
+  type = string
+}
+
+variable "webui-repo-url" {
   type = string
 }
 

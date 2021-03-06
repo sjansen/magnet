@@ -1,13 +1,13 @@
-resource "aws_cloudwatch_log_group" "web" {
-  name = local.cloudwatch_lambda_prefix
+resource "aws_cloudwatch_log_group" "apigw" {
+  name = "/aws/apigateway/${local.webui-fn-name}"
   tags = var.tags
 
-  retention_in_days = local.cloudwatch_retention
+  retention_in_days = var.cloudwatch-retention
 }
 
-resource "aws_cloudwatch_log_group" "apigw" {
-  name = local.cloudwatch_apigw_prefix
+resource "aws_cloudwatch_log_group" "webui" {
+  name = "/aws/lambda/${local.webui-fn-name}"
   tags = var.tags
 
-  retention_in_days = local.cloudwatch_retention
+  retention_in_days = var.cloudwatch-retention
 }

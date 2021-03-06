@@ -1,5 +1,5 @@
-.PHONY:  default  check-env  check-working-tree  login
-.PHONY:  push-staging  snapshot  start  test
+.PHONY:  default  check-env  check-working-tree
+.PHONY:  login  staging  snapshot  start  test
 
 
 default: start
@@ -10,6 +10,11 @@ ifndef AWSCLI
 	$(error AWSCLI is undefined)
 endif
 
+
+
+check-working-tree:
+	@git diff-index --quiet HEAD -- \
+	|| (echo "Working tree is dirty. Commit all changes."; false)
 
 
 dynamodb:
@@ -24,12 +29,13 @@ login: check-env
 	    `scripts/get-ecr-registry`
 
 
-push-staging: login
-	@scripts/push-staging
-
-
 snapshot:
 	git archive -o snapshot.tgz HEAD
+
+
+staging: check-working-tree login
+	scripts/staging-docker-push
+	scripts/staging-deploy
 
 
 start:

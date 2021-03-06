@@ -7,7 +7,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   tags            = var.tags
 
   aliases = [
-    var.dns_name
+    var.dns-name
   ]
 
   custom_error_response {
@@ -141,7 +141,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   origin {
-    domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.default.invoke_url, "https://"), "/default")
+    domain_name = trimsuffix(trimprefix(aws_api_gateway_stage.webui.invoke_url, "https://"), "/default")
     origin_id   = "APIGW"
     custom_origin_config {
       http_port              = "80"
@@ -183,5 +183,5 @@ resource "aws_cloudfront_distribution" "cdn" {
 
 resource "aws_cloudfront_origin_access_identity" "cdn" {
   provider = aws.us-east-1
-  comment  = "OAI for ${var.dns_name}"
+  comment  = "OAI for ${var.dns-name}"
 }

@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e -u -o pipefail
+
+
+git diff-index --quiet HEAD -- \
+|| (echo "Working tree is dirty. Commit all changes."; false)
+
+
+FUNC=$(scripts/get-staging-fn-name)
+REPO=$(scripts/get-staging-repo-url)
+
+aws lambda update-function-code \
+    --function-name ${FUNC} \
+    --image-uri ${REPO}:latest

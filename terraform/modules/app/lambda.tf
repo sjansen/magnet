@@ -1,12 +1,12 @@
-resource "aws_lambda_function" "web" {
-  image_uri    = "${aws_ecr_repository.web.repository_url}:latest"
+resource "aws_lambda_function" "webui" {
+  image_uri    = "${var.webui-repo-url}:latest"
   package_type = "Image"
   tags         = var.tags
 
-  function_name = local.web_function_name
+  function_name = local.webui-fn-name
   memory_size   = 128
   publish       = true
-  role          = aws_iam_role.web.arn
+  role          = aws_iam_role.webui.arn
   timeout       = 15
 
   environment {
@@ -18,8 +18,8 @@ resource "aws_lambda_function" "web" {
       MAGNET_SAML_METADATA_URL      = "ssm"
       MAGNET_SAML_PRIVATE_KEY       = "ssm"
       MAGNET_SESSION_TABLE          = aws_dynamodb_table.sessions.name
-      MAGNET_SSM_PREFIX             = "/${local.ssm_prefix}/"
-      MAGNET_URL                    = "https://${var.dns_name}/"
+      MAGNET_SSM_PREFIX             = "/${var.ssm-prefix}/"
+      MAGNET_URL                    = "https://${var.dns-name}/"
     }
   }
 
@@ -28,14 +28,14 @@ resource "aws_lambda_function" "web" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.web,
+    aws_cloudwatch_log_group.webui,
   ]
 }
 
 resource "aws_lambda_permission" "apigw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.web.function_name
+  function_name = local.webui-fn-name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.web.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.webui.execution_arn}/*/*"
 }

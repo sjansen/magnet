@@ -1,12 +1,12 @@
 data "aws_route53_zone" "zone" {
-  name         = var.dns_zone
+  name         = var.dns-zone
   private_zone = false
 }
 
 
 resource "aws_route53_record" "cdn" {
   zone_id = data.aws_route53_zone.zone.id
-  name    = var.dns_name
+  name    = var.dns-name
   type    = "A"
 
   alias {

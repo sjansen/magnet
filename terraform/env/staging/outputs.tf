@@ -1,23 +1,23 @@
-output "bucket" {
-  value = module.app.bucket
+output "docker-registry" {
+  value = module.bootstrap.docker-registry
 }
 
-output "ecr_arn" {
-  value = module.app.ecr_arn
+output "media-bucket" {
+  value = module.app.media-bucket
 }
 
-output "function-name" {
-  value = module.app.function_name
+output "ssm-prefix" {
+  value = "/${module.bootstrap.ssm-prefix}/"
 }
 
-output "registry" {
-  value = module.app.registry
+output "webui-fn-name" {
+  value = module.app.webui-fn-name
 }
 
-output "repository-arn" {
-  value = module.app.repository-arn
+output "webui-repo-arn" {
+  value = module.bootstrap.webui-repo-arn
 }
 
-output "repository-url" {
-  value = module.app.repository-url
+output "webui-repo-url" {
+  value = module.bootstrap.webui-repo-url
 }

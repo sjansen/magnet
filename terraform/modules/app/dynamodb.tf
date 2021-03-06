@@ -1,5 +1,7 @@
 resource "aws_dynamodb_table" "sessions" {
-  name         = local.sessions_table
+  name = "${var.dns-name}-sessions"
+  tags = var.tags
+
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "token"
 

@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "AssumeRole-lambda" {
   }
 }
 
-data "aws_iam_policy_document" "web" {
+data "aws_iam_policy_document" "webui-lambda" {
   statement {
     actions = [
       "dynamodb:BatchGetItem",
@@ -50,14 +50,14 @@ data "aws_iam_policy_document" "web" {
   }
   statement {
     actions   = ["ssm:GetParameters"]
-    resources = ["arn:aws:ssm:*:*:parameter/${local.ssm_prefix}/*"]
+    resources = ["arn:aws:ssm:*:*:parameter/${var.ssm-prefix}/*"]
   }
 }
 
-resource "aws_iam_policy" "web" {
+resource "aws_iam_policy" "webui" {
   name   = "all-the-things"
   path   = "/"
-  policy = data.aws_iam_policy_document.web.json
+  policy = data.aws_iam_policy_document.webui-lambda.json
 }
 
 resource "aws_iam_role" "apigw" {
@@ -67,8 +67,8 @@ resource "aws_iam_role" "apigw" {
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-apigw.json
 }
 
-resource "aws_iam_role" "web" {
-  name = local.web_iam_role_name
+resource "aws_iam_role" "webui" {
+  name = var.dns-name
   tags = var.tags
 
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
@@ -79,17 +79,17 @@ resource "aws_iam_role_policy_attachment" "apigw" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
 
-resource "aws_iam_role_policy_attachment" "web" {
-  role       = aws_iam_role.web.name
-  policy_arn = aws_iam_policy.web.arn
+resource "aws_iam_role_policy_attachment" "webui" {
+  role       = aws_iam_role.webui.name
+  policy_arn = aws_iam_policy.webui.arn
 }
 
-resource "aws_iam_role_policy_attachment" "web-logs" {
-  role       = aws_iam_role.web.name
+resource "aws_iam_role_policy_attachment" "webui-logs" {
+  role       = aws_iam_role.webui.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "web-xray" {
-  role       = aws_iam_role.web.name
+resource "aws_iam_role_policy_attachment" "webui-xray" {
+  role       = aws_iam_role.webui.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
 }

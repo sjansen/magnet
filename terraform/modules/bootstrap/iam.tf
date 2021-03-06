@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "ecr-web" {
+data "aws_iam_policy_document" "webui-ecr" {
   statement {
     sid = "LambdaECRImageRetrievalPolicy"
     actions = [
@@ -15,16 +15,4 @@ data "aws_iam_policy_document" "ecr-web" {
       ]
     }
   }
-}
-
-resource "aws_ecr_repository" "web" {
-  name = local.ecr_repository_name
-  tags = var.tags
-
-  image_tag_mutability = "IMMUTABLE"
-}
-
-resource "aws_ecr_repository_policy" "web" {
-  repository = aws_ecr_repository.web.name
-  policy     = data.aws_iam_policy_document.ecr-web.json
 }

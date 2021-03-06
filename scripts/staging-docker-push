@@ -5,9 +5,8 @@ set -e -u -o pipefail
 git diff-index --quiet HEAD -- \
 || (echo "Working tree is dirty. Commit all changes."; false)
 
-FUNC=$(scripts/get-function-name)
 GITSHA=$(git rev-parse HEAD)
-REPO=$(scripts/get-ecr-repository-url)
+REPO=$(scripts/get-staging-repo-url)
 TAG=${REPO}:${GITSHA}
 NAME=$(echo $REPO | sed 's|.*/||')
 
@@ -17,7 +16,7 @@ docker build \
     --build-arg=TIMESTAMP="$(date -u '+%Y-%m-%d %H:%M:%S +0000 UTC')" \
     --compress --force-rm --pull \
     -t $TAG \
-    -f ./docker/web/Dockerfile \
+    -f ./docker/webui/Dockerfile \
     .
 
 docker push $TAG
@@ -29,7 +28,3 @@ aws ecr batch-delete-image \
     --image-ids imageTag=latest
 
 docker push ${REPO}:latest
-
-aws lambda update-function-code \
-    --function-name ${FUNC} \
-    --image-uri ${REPO}:latest
