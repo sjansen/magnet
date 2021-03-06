@@ -7,20 +7,22 @@ RUN cd /go/src/${MODULE} && \
 
 ARG GITSHA="(missing)"
 ARG TIMESTAMP="(missing)"
+ADD cmd      /go/src/${MODULE}/cmd
 ADD internal /go/src/${MODULE}/internal
 RUN cd /go/src/${MODULE} && \
     echo GITSHA=${GITSHA} && \
     echo TIMESTAMP="${TIMESTAMP}" && \
     CGO_ENABLED=0 GOOS=linux \
     go build \
+        -o /webui \
         -a -installsuffix cgo \
         -ldflags="-s -w -X ${MODULE}/internal/build.GitSHA=${GITSHA} -X '${MODULE}/internal/build.Timestamp=${TIMESTAMP}'" \
-        -o /app
+        ./cmd/webui
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app /app
+COPY --from=builder /webui /webui
 ADD templates /templates
 EXPOSE 8000
 WORKDIR /
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/webui"]

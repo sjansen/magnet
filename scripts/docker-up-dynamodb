@@ -8,4 +8,5 @@ docker-compose \
     -f docker-compose.localdev.yml \
     up --abort-on-container-exit \
     --exit-code-from=dynamodb \
-    --force-recreate
+    --force-recreate \
+    --remove-orphans
