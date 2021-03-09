@@ -1,14 +1,16 @@
 output "fn-arns" {
   value = {
-    move  = aws_lambda_function.move.arn
-    webui = aws_lambda_function.webui.arn
+    convert = aws_lambda_function.convert.arn
+    move    = aws_lambda_function.move.arn
+    webui   = aws_lambda_function.webui.arn
   }
 }
 
 output "fn-names" {
   value = {
-    move  = aws_lambda_function.move.function_name
-    webui = aws_lambda_function.webui.function_name
+    convert = aws_lambda_function.convert.function_name
+    move    = aws_lambda_function.move.function_name
+    webui   = aws_lambda_function.webui.function_name
   }
 }
 

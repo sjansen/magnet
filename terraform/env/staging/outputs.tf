@@ -6,6 +6,18 @@ output "media-bucket" {
   value = module.app.media-bucket
 }
 
+output "convert-fn-name" {
+  value = module.app.fn-names["convert"]
+}
+
+output "convert-repo-arn" {
+  value = module.bootstrap.repo-arns["convert"]
+}
+
+output "convert-repo-url" {
+  value = module.bootstrap.repo-urls["convert"]
+}
+
 output "move-fn-name" {
   value = module.app.fn-names["move"]
 }

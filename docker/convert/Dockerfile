@@ -18,9 +18,21 @@ RUN cd /go/src/${MODULE} && \
         -o /lambda-handler \
         -a -installsuffix cgo \
         -ldflags="-s -w -X ${MODULE}/internal/build.GitSHA=${GITSHA} -X '${MODULE}/internal/build.Timestamp=${TIMESTAMP}'" \
-        ./cmd/move
+        ./cmd/convert
 
-FROM scratch
+# TODO https://github.com/svg/svgo
+# TODO https://lib.rs/crates/oxipng
+FROM alpine:3
+RUN apk add --no-cache --update \
+    advancecomp \
+    ca-certificates \
+    jpegoptim \
+    gifsicle \
+    libjpeg-turbo-utils \
+    libwebp-tools \
+    optipng \
+    pngcrush \
+    pngquant
 COPY --from=builder /lambda-handler /lambda-handler
 EXPOSE 8000
 WORKDIR /

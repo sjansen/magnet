@@ -1,9 +1,5 @@
-locals {
-  repos = toset(["move", "webui"])
-}
-
 resource "aws_ecr_lifecycle_policy" "x" {
-  for_each = local.repos
+  for_each = local.lambdas
 
   repository = aws_ecr_repository.x[each.key].name
   policy     = <<EOF
@@ -37,7 +33,7 @@ EOF
 }
 
 resource "aws_ecr_repository" "x" {
-  for_each = local.repos
+  for_each = local.lambdas
 
   name = "${var.dns-name}-${each.key}"
   tags = var.tags
@@ -46,7 +42,7 @@ resource "aws_ecr_repository" "x" {
 }
 
 resource "aws_ecr_repository_policy" "x" {
-  for_each = local.repos
+  for_each = local.lambdas
 
   repository = aws_ecr_repository.x[each.key].name
   policy     = data.aws_iam_policy_document.ecr-lambda.json

@@ -8,46 +8,29 @@ git diff-index --quiet HEAD -- \
 GITSHA=$(git rev-parse HEAD)
 TIMESTAMP="$(date -u '+%Y-%m-%d %H:%M:%S +0000 UTC')"
 
-###
-# move
-###
-REPO=$(scripts/get-staging-repo-url move)
-NAME=$(echo $REPO | sed 's|.*/||')
+function build-and-push() {
+    declare FN="$1"
 
-TAG=${REPO}:${GITSHA}
-docker build \
-    --build-arg=GITSHA="$GITSHA" \
-    --build-arg=TIMESTAMP="$TIMESTAMP" \
-    --compress --force-rm --pull \
-    -t $TAG \
-    -f ./docker/move/Dockerfile \
-    .
-docker push $TAG
+    declare REPO=$(scripts/get-staging-repo-url $FN)
+    declare NAME=$(echo $REPO | sed 's|.*/||')
+    declare TAG=${REPO}:${GITSHA}
+    docker build \
+        --build-arg=GITSHA="$GITSHA" \
+        --build-arg=TIMESTAMP="$TIMESTAMP" \
+        --compress --force-rm --pull \
+        -t $TAG \
+        -f ./docker/${FN}/Dockerfile \
+        .
+    docker push $TAG
 
-docker tag $TAG ${REPO}:latest
-aws ecr batch-delete-image \
-    --repository-name $NAME \
-    --image-ids imageTag=latest
-docker push ${REPO}:latest
+    docker tag $TAG ${REPO}:latest
+    aws ecr batch-delete-image \
+        --repository-name $NAME \
+        --image-ids imageTag=latest
+    docker push ${REPO}:latest
+}
 
-###
-# webui
-###
-REPO=$(scripts/get-staging-repo-url webui)
-NAME=$(echo $REPO | sed 's|.*/||')
 
-TAG=${REPO}:${GITSHA}
-docker build \
-    --build-arg=GITSHA="$GITSHA" \
-    --build-arg=TIMESTAMP="$TIMESTAMP" \
-    --compress --force-rm --pull \
-    -t $TAG \
-    -f ./docker/webui/Dockerfile \
-    .
-docker push $TAG
-
-docker tag $TAG ${REPO}:latest
-aws ecr batch-delete-image \
-    --repository-name $NAME \
-    --image-ids imageTag=latest
-docker push ${REPO}:latest
+for FN in convert move webui; do
+    build-and-push $FN
+done

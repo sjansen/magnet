@@ -8,14 +8,12 @@ output "ssm-prefix" {
 
 output "repo-arns" {
   value = {
-    move  = aws_ecr_repository.x["move"].arn
-    webui = aws_ecr_repository.x["webui"].arn
+    for x in local.lambdas : x => aws_ecr_repository.x[x].arn
   }
 }
 
 output "repo-urls" {
   value = {
-    move  = aws_ecr_repository.x["move"].repository_url
-    webui = aws_ecr_repository.x["webui"].repository_url
+    for x in local.lambdas : x => aws_ecr_repository.x[x].repository_url
   }
 }

@@ -1,9 +1,29 @@
+resource "aws_lambda_function" "convert" {
+  image_uri    = "${var.repo-urls["convert"]}:latest"
+  package_type = "Image"
+  tags         = var.tags
+
+  function_name = local.fn-names["convert"]
+  memory_size   = 128
+  publish       = true
+  role          = aws_iam_role.x["convert"].arn
+  timeout       = 15
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.x["convert"],
+  ]
+}
+
 resource "aws_lambda_function" "move" {
   image_uri    = "${var.repo-urls["move"]}:latest"
   package_type = "Image"
   tags         = var.tags
 
-  function_name = local.move-fn-name
+  function_name = local.fn-names["move"]
   memory_size   = 128
   publish       = true
   role          = aws_iam_role.x["move"].arn
@@ -14,7 +34,7 @@ resource "aws_lambda_function" "move" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.move,
+    aws_cloudwatch_log_group.x["move"],
   ]
 }
 
@@ -23,7 +43,7 @@ resource "aws_lambda_function" "webui" {
   package_type = "Image"
   tags         = var.tags
 
-  function_name = local.webui-fn-name
+  function_name = local.fn-names["webui"]
   memory_size   = 128
   publish       = true
   role          = aws_iam_role.x["webui"].arn
@@ -48,7 +68,7 @@ resource "aws_lambda_function" "webui" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.webui,
+    aws_cloudwatch_log_group.x["webui"],
   ]
 }
 

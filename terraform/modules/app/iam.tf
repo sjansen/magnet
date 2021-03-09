@@ -1,10 +1,3 @@
-locals {
-  lambda-roles = {
-    move  = "${var.dns-name}-move",
-    webui = "${var.dns-name}-webui",
-  }
-}
-
 data "aws_iam_policy_document" "AssumeRole-apigw" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -75,9 +68,10 @@ resource "aws_iam_role" "apigw" {
 }
 
 resource "aws_iam_role" "x" {
-  for_each = local.lambda-roles
-  name     = each.value
-  tags     = var.tags
+  for_each = local.lambdas
+
+  name = "${var.dns-name}-${each.value}"
+  tags = var.tags
 
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
 }
