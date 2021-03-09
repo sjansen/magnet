@@ -13,7 +13,8 @@ type BrowseHeader struct {
 // BrowsePage provides common content for bucket browser pages.
 type BrowsePage struct {
 	Page
-	Key string
+	Icon string
+	Key  string
 }
 
 // Header converts a key or prefix to a bucket browser page header.

@@ -3,9 +3,9 @@
   <div class="px-4 py-5 sm:px-6">
     {{with .Header }}
     <h3 class="text-lg leading-6 font-medium text-gray-900">
-      <span class="text-gray-600">Prefix:</span>
+      <img src="{{ $.Icon }}" height="20" width="20" class="inline mr-2" />
       {{range .Head -}}
-        <a href="{{ .URL }}">{{ .Text }}</a>/
+        <a class="hover:underline" href="{{ .URL }}">{{ .Text }}</a>/
       {{- end}}
       {{- .Tail }}
     </h3>

@@ -2,9 +2,9 @@ package move
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -13,12 +13,8 @@ func init() {
 }
 
 // HandleEvent handles Lambda events.
-func HandleEvent(ctx context.Context, events events.S3Event) error {
-	for i, event := range events.Records {
-		fmt.Printf("%d: %#v\n", i, event)
-		fmt.Printf("%#v\n", event.S3.Bucket)
-		fmt.Printf("%#v\n", event.S3.Object)
-	}
+func HandleEvent(ctx context.Context, events json.RawMessage) error {
+	fmt.Println(string(events))
 	return nil
 }
 

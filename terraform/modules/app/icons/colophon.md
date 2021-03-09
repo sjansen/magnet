@@ -10,6 +10,11 @@ favicon.ico
  - Creative Commons Attribution 3.0
  - https://thenounproject.com/icon/2284275/
 
+folder.svg
+ - By Landan Lloyd
+ - Creative Commons Attribution 3.0
+ - https://thenounproject.com/icon/1593982/
+
 generic.svg
  - By Vectorstall, PK
  - Creative Commons Attribution 3.0

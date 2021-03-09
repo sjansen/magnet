@@ -18,6 +18,7 @@ import (
 
 var icons map[string]string = map[string]string{
 	"":     "/magnet/icons/generic.svg",
+	"/":    "/magnet/icons/folder.svg",
 	".gif": "/magnet/icons/image.svg",
 	".ico": "/magnet/icons/image.svg",
 	".jpg": "/magnet/icons/image.svg",
@@ -118,8 +119,13 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 				Size:      humanize.Bytes(uint64(*object.Size)),
 				Timestamp: object.LastModified.String(),
 			}
-			page.Key = path
 			page.Title = path
+			page.Key = path
+			if icon, ok := icons[strings.ToLower(filepath.Ext(path))]; ok {
+				page.Icon = icon
+			} else {
+				page.Icon = icons[""]
+			}
 
 			pages.WriteResponse(w, page)
 			return
@@ -132,6 +138,7 @@ func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
 	}
 	page.Title = path
 	page.Key = path
+	page.Icon = icons["/"]
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
 		page.Prefixes = append(page.Prefixes, prefix)
