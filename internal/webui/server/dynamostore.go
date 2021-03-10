@@ -11,15 +11,15 @@ import (
 	"github.com/sjansen/magnet/internal/config"
 )
 
-func (s *Server) openDynamoStores(cfg *config.Config) (scs.Store, scs.Store, error) {
+func (s *Server) openDynamoStores(cfg *config.SessionStore) (scs.Store, scs.Store, error) {
 	var svc *dynamodb.DynamoDB
-	if cfg.SessionStore.Endpoint.Host == "" {
+	if cfg.Endpoint.Host == "" {
 		svc = dynamodb.New(s.aws)
 	} else {
 		svc = dynamodb.New(s.aws,
 			s.aws.Config.Copy().
 				WithEndpoint(
-					cfg.SessionStore.Endpoint.String(),
+					cfg.Endpoint.String(),
 				).
 				WithCredentials(
 					credentials.NewStaticCredentials("id", "secret", "token"),
@@ -27,8 +27,8 @@ func (s *Server) openDynamoStores(cfg *config.Config) (scs.Store, scs.Store, err
 		)
 	}
 
-	store := dynamostore.NewWithTableName(svc, cfg.SessionStore.Table)
-	if cfg.SessionStore.Create {
+	store := dynamostore.NewWithTableName(svc, cfg.Table)
+	if cfg.Create {
 		err := store.CreateTable()
 		if err != nil {
 			return nil, nil, err

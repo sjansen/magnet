@@ -54,12 +54,12 @@ resource "aws_lambda_function" "webui" {
       MAGNET_BUCKET                 = aws_s3_bucket.media.id,
       MAGNET_CLOUDFRONT_KEY_ID      = "ssm"
       MAGNET_CLOUDFRONT_PRIVATE_KEY = "ssm"
+      MAGNET_ROOT_URL               = "https://${var.dns-name}/"
       MAGNET_SAML_CERTIFICATE       = "ssm"
       MAGNET_SAML_METADATA_URL      = "ssm"
       MAGNET_SAML_PRIVATE_KEY       = "ssm"
       MAGNET_SESSION_TABLE          = aws_dynamodb_table.sessions.name
       MAGNET_SSM_PREFIX             = "/${var.ssm-prefix}/"
-      MAGNET_URL                    = "https://${var.dns-name}/"
     }
   }
 

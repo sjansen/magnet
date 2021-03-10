@@ -43,17 +43,17 @@ type Browser struct {
 }
 
 // NewBrowser creates a new bucket browser.
-func NewBrowser(base string, cfg *config.Config, client *s3.S3) *Browser {
+func NewBrowser(base string, cfg *config.WebUI, client *s3.S3) *Browser {
 	return &Browser{
 		basePath:  base,
 		bucket:    cfg.Bucket,
 		client:    client,
-		signedURL: cfg.Root.String() + "*",
+		signedURL: cfg.RootURL.String() + "*",
 		signer: sign.NewCookieSigner(
 			cfg.CloudFront.KeyID,
 			cfg.CloudFront.PrivateKey.Value,
 			func(o *sign.CookieOptions) {
-				o.Domain = cfg.Root.Host
+				o.Domain = cfg.RootURL.Host
 				o.Path = "/"
 				o.Secure = true
 			},

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/sjansen/magnet/internal/build"
+	"github.com/sjansen/magnet/internal/config"
 	"github.com/sjansen/magnet/internal/move"
 )
 
@@ -17,5 +18,11 @@ func main() {
 	fmt.Println("GitSHA:", build.GitSHA)
 	fmt.Println("Timestamp:", build.Timestamp)
 
-	move.StartLambdaHandler()
+	cfg, err := config.LoadMoveConfig()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+
+	move.StartLambdaHandler(cfg)
 }

@@ -18,7 +18,7 @@ func main() {
 	fmt.Println("GitSHA:", build.GitSHA)
 	fmt.Println("Timestamp:", build.Timestamp)
 
-	cfg, err := config.New()
+	cfg, err := config.LoadWebUIConfig()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

@@ -36,7 +36,7 @@ func (s *Server) addRouter() {
 		handlers.NewBrowser("/browse/", s.config, svc).Handler,
 	)))
 	r.Handle("/upload/", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewUploader("/upload/", s.config, svc).Handler,
+		handlers.NewUploader("/upload/", s.config.Bucket, svc).Handler,
 	)))
 	r.Handle("/whoami", s.saml.RequireAccount(http.HandlerFunc(
 		handlers.WhoAmI,

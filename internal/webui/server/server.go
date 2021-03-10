@@ -27,7 +27,7 @@ var _ samlsp.Session = &Server{}
 // Server provides Strongbox's API
 type Server struct {
 	aws        *session.Session
-	config     *config.Config
+	config     *config.WebUI
 	lambda     *chiadapter.ChiLambda
 	relaystate *scs.SessionManager
 	router     *chi.Mux
@@ -41,7 +41,7 @@ type Server struct {
 }
 
 // New creates a new Server
-func New(cfg *config.Config) (*Server, error) {
+func New(cfg *config.WebUI) (*Server, error) {
 	s := &Server{
 		config: cfg,
 		done:   make(chan struct{}),
@@ -58,14 +58,14 @@ func New(cfg *config.Config) (*Server, error) {
 	s.aws = aws
 
 	fmt.Println("Loading SAML config...")
-	sp, err := newSAMLMiddleware(cfg)
+	sp, err := newSAMLMiddleware(&cfg.SAML)
 	if err != nil {
 		return nil, err
 	}
 	s.saml = sp
 
 	fmt.Println("Preparing session store...")
-	relaystate, sessions, err := s.openDynamoStores(cfg)
+	relaystate, sessions, err := s.openDynamoStores(&cfg.SessionStore)
 	if err != nil {
 		return nil, err
 	}

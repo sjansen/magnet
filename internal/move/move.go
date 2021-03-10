@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/sjansen/magnet/internal/config"
 )
 
 func init() {
@@ -19,6 +20,6 @@ func HandleEvent(ctx context.Context, events json.RawMessage) error {
 }
 
 // StartLambdaHandler waits for and processes events from AWS Lambda.
-func StartLambdaHandler() {
+func StartLambdaHandler(cfg *config.Move) {
 	lambda.Start(HandleEvent)
 }

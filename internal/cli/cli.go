@@ -9,7 +9,7 @@ import (
 )
 
 type context struct {
-	cfg *config.Config
+	cfg *config.WebUI
 }
 
 var cli struct {
@@ -22,7 +22,7 @@ func ParseAndRun() {
 	)
 
 	fmt.Println("Loading config...")
-	cfg, err := config.New()
+	cfg, err := config.LoadWebUIConfig()
 	ctx.FatalIfErrorf(err)
 
 	err = ctx.Run(&context{

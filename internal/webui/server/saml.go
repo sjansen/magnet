@@ -14,10 +14,10 @@ import (
 	"github.com/sjansen/magnet/internal/config"
 )
 
-func newSAMLMiddleware(cfg *config.Config) (*samlsp.Middleware, error) {
+func newSAMLMiddleware(cfg *config.SAML) (*samlsp.Middleware, error) {
 	keyPair, err := tls.X509KeyPair(
-		[]byte(cfg.SAML.Certificate),
-		[]byte(cfg.SAML.PrivateKey),
+		[]byte(cfg.Certificate),
+		[]byte(cfg.PrivateKey),
 	)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func newSAMLMiddleware(cfg *config.Config) (*samlsp.Middleware, error) {
 	}
 
 	return samlsp.New(samlsp.Options{
-		EntityID:    cfg.SAML.EntityID,
-		URL:         cfg.Root.URL,
+		EntityID:    cfg.EntityID,
+		URL:         cfg.RootURL.URL,
 		Key:         keyPair.PrivateKey.(*rsa.PrivateKey),
 		Certificate: keyPair.Leaf,
 		// TODO Intermediates
@@ -49,8 +49,8 @@ func newSAMLMiddleware(cfg *config.Config) (*samlsp.Middleware, error) {
 	})
 }
 
-func loadIDPMetadata(cfg *config.Config) (*saml.EntityDescriptor, error) {
-	resp, err := http.Get(cfg.SAML.MetadataURL)
+func loadIDPMetadata(cfg *config.SAML) (*saml.EntityDescriptor, error) {
+	resp, err := http.Get(cfg.MetadataURL)
 	if err != nil {
 		return nil, fmt.Errorf("fetch idp metadata: %w", err)
 	}
