@@ -10,7 +10,7 @@ type runserverCmd struct{}
 
 func (cmd *runserverCmd) Run(ctx *context) error {
 	fmt.Println("Starting server...")
-	s, err := server.New(ctx.cfg)
+	s, err := server.New()
 	if err != nil {
 		return err
 	}

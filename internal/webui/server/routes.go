@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/go-chi/chi"
 	cmw "github.com/go-chi/chi/middleware"
 
+	"github.com/sjansen/magnet/internal/aws"
 	"github.com/sjansen/magnet/internal/webui/handlers"
 )
 
@@ -28,7 +28,7 @@ func (s *Server) addRouter() {
 		r.Use(s.relaystate.LoadAndSave)
 	}
 
-	svc := s3.New(s.aws)
+	svc := aws.NewS3Client(s.aws)
 
 	r.Get("/", handlers.Root)
 	r.Mount("/saml/", s.saml)

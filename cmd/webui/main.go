@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/sjansen/magnet/internal/build"
-	"github.com/sjansen/magnet/internal/config"
 	"github.com/sjansen/magnet/internal/webui/server"
 )
 
@@ -18,13 +17,7 @@ func main() {
 	fmt.Println("GitSHA:", build.GitSHA)
 	fmt.Println("Timestamp:", build.Timestamp)
 
-	cfg, err := config.LoadWebUIConfig()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
-
-	s, err := server.New(cfg)
+	s, err := server.New()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

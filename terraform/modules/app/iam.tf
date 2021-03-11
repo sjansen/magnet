@@ -18,6 +18,27 @@ data "aws_iam_policy_document" "AssumeRole-lambda" {
   }
 }
 
+data "aws_iam_policy_document" "move-lambda" {
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      aws_s3_bucket.media.arn,
+      "${aws_s3_bucket.media.arn}/inbox/*",
+    ]
+  }
+  statement {
+    actions = [
+      "s3:PutObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.media.arn}/review/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "webui-lambda" {
   statement {
     actions = [
@@ -54,12 +75,6 @@ data "aws_iam_policy_document" "webui-lambda" {
   }
 }
 
-resource "aws_iam_policy" "webui" {
-  name   = "all-the-things"
-  path   = "/"
-  policy = data.aws_iam_policy_document.webui-lambda.json
-}
-
 resource "aws_iam_role" "apigw" {
   name = "APIGateway"
   tags = var.tags
@@ -76,14 +91,21 @@ resource "aws_iam_role" "x" {
   assume_role_policy = data.aws_iam_policy_document.AssumeRole-lambda.json
 }
 
+resource "aws_iam_role_policy" "move" {
+  name   = "all-the-things"
+  role   = aws_iam_role.x["move"].name
+  policy = data.aws_iam_policy_document.move-lambda.json
+}
+
+resource "aws_iam_role_policy" "webui" {
+  name   = "all-the-things"
+  role   = aws_iam_role.x["webui"].name
+  policy = data.aws_iam_policy_document.webui-lambda.json
+}
+
 resource "aws_iam_role_policy_attachment" "apigw" {
   role       = aws_iam_role.apigw.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-}
-
-resource "aws_iam_role_policy_attachment" "webui" {
-  role       = aws_iam_role.x["webui"].name
-  policy_arn = aws_iam_policy.webui.arn
 }
 
 resource "aws_iam_role_policy_attachment" "lambda-logs" {

@@ -1,6 +1,7 @@
 FROM golang:1.16-alpine as builder
 ARG MODULE=github.com/sjansen/magnet
 RUN apk add --update \
+    ca-certificates \
     git
 ADD go.mod go.sum main.go /go/src/${MODULE}/
 RUN cd /go/src/${MODULE} && \
@@ -21,6 +22,7 @@ RUN cd /go/src/${MODULE} && \
         ./cmd/move
 
 FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /lambda-handler /lambda-handler
 EXPOSE 8000
 WORKDIR /

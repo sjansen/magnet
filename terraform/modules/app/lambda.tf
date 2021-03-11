@@ -9,6 +9,12 @@ resource "aws_lambda_function" "convert" {
   role          = aws_iam_role.x["convert"].arn
   timeout       = 15
 
+  environment {
+    variables = {
+      MAGNET_BUCKET = aws_s3_bucket.media.id,
+    }
+  }
+
   tracing_config {
     mode = "Active"
   }
@@ -28,6 +34,12 @@ resource "aws_lambda_function" "move" {
   publish       = true
   role          = aws_iam_role.x["move"].arn
   timeout       = 15
+
+  environment {
+    variables = {
+      MAGNET_BUCKET = aws_s3_bucket.media.id,
+    }
+  }
 
   tracing_config {
     mode = "Active"

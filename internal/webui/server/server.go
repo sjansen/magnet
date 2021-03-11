@@ -12,19 +12,19 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/crewjam/saml/samlsp"
 	"github.com/go-chi/chi"
 
+	"github.com/sjansen/magnet/internal/aws"
 	"github.com/sjansen/magnet/internal/config"
 )
 
 var _ samlsp.RequestTracker = &Server{}
 var _ samlsp.Session = &Server{}
 
-// Server provides Strongbox's API
+// Server provides Magnet's API
 type Server struct {
 	aws        *session.Session
 	config     *config.WebUI
@@ -41,28 +41,31 @@ type Server struct {
 }
 
 // New creates a new Server
-func New(cfg *config.WebUI) (*Server, error) {
-	s := &Server{
-		config: cfg,
-		done:   make(chan struct{}),
-	}
-
-	fmt.Println("Preparing AWS clients...")
-	aws, err := session.NewSession(
-		aws.NewConfig().
-			WithCredentialsChainVerboseErrors(true),
-	)
+func New() (*Server, error) {
+	fmt.Println("Loading config...")
+	cfg, err := config.LoadWebUIConfig()
 	if err != nil {
 		return nil, err
 	}
-	s.aws = aws
+
+	fmt.Println("Preparing AWS clients...")
+	aws, err := aws.NewSession()
+	if err != nil {
+		return nil, err
+	}
 
 	fmt.Println("Loading SAML config...")
 	sp, err := newSAMLMiddleware(&cfg.SAML)
 	if err != nil {
 		return nil, err
 	}
-	s.saml = sp
+
+	s := &Server{
+		aws:    aws,
+		config: cfg,
+		done:   make(chan struct{}),
+		saml:   sp,
+	}
 
 	fmt.Println("Preparing session store...")
 	relaystate, sessions, err := s.openDynamoStores(&cfg.SessionStore)

@@ -1,32 +1,21 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/alecthomas/kong"
-
-	"github.com/sjansen/magnet/internal/config"
 )
 
-type context struct {
-	cfg *config.WebUI
-}
+type context struct{}
 
 var cli struct {
 	Runserver runserverCmd `cmd:"cmd"`
 }
 
+// ParseAndRun parses command line arguments then runs the matching command.
 func ParseAndRun() {
 	ctx := kong.Parse(&cli,
 		kong.UsageOnError(),
 	)
 
-	fmt.Println("Loading config...")
-	cfg, err := config.LoadWebUIConfig()
-	ctx.FatalIfErrorf(err)
-
-	err = ctx.Run(&context{
-		cfg: cfg,
-	})
+	err := ctx.Run(&context{})
 	ctx.FatalIfErrorf(err)
 }
