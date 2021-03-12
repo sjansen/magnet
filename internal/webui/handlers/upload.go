@@ -28,8 +28,8 @@ func NewUploader(base string, bkt string, svc *s3.S3) *Uploader {
 	}
 }
 
-// Handler can be used to add objects to a bucket.
-func (up *Uploader) Handler(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP can be used to add objects to a bucket.
+func (up *Uploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	creds, err := up.svc.Client.Config.Credentials.Get()
 	if err != nil {
 		fmt.Println(err)

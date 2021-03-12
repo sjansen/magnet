@@ -61,8 +61,8 @@ func NewBrowser(base string, cfg *config.WebUI, client *s3.S3) *Browser {
 	}
 }
 
-// Handler can be used to browse the objects in a bucket.
-func (b *Browser) Handler(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP can be used to browse the objects in a bucket.
+func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO move trimming to router?
 	path := strings.TrimPrefix(r.URL.Path, b.basePath)
 	tmp := strings.SplitN(path, "/", 2)

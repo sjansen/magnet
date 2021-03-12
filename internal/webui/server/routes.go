@@ -28,17 +28,31 @@ func (s *Server) addRouter() {
 		r.Use(s.relaystate.LoadAndSave)
 	}
 
-	svc := aws.NewS3Client(s.aws)
+	requireLogin := s.saml.RequireAccount
+	s3 := aws.NewS3Client(s.aws)
 
 	r.Get("/", handlers.Root)
 	r.Mount("/saml/", s.saml)
-	r.Handle("/browse/*", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewBrowser("/browse/", s.config, svc).Handler,
-	)))
-	r.Handle("/upload/", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.NewUploader("/upload/", s.config.Bucket, svc).Handler,
-	)))
-	r.Handle("/whoami", s.saml.RequireAccount(http.HandlerFunc(
-		handlers.WhoAmI,
-	)))
+	r.Handle("/browse/*", requireLogin(
+		handlers.NewBrowser("/browse/", s.config, s3),
+	))
+	r.Handle("/upload/", requireLogin(
+		handlers.NewUploader("/upload/", s.config.Bucket, s3),
+	))
+	r.Handle("/whoami", requireLogin(
+		http.HandlerFunc(handlers.WhoAmI),
+	))
+
+	if s.config.Development {
+		r.Get("/favicon.ico",
+			http.StripPrefix("/",
+				http.FileServer(http.Dir("terraform/modules/app/icons/")),
+			).ServeHTTP,
+		)
+		r.Get("/magnet/icons/*",
+			http.StripPrefix("/magnet/icons/",
+				http.FileServer(http.Dir("terraform/modules/app/icons/")),
+			).ServeHTTP,
+		)
+	}
 }
