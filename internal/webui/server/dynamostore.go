@@ -4,26 +4,33 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/sjansen/dynamostore"
 
 	"github.com/sjansen/magnet/internal/config"
 )
 
 func (s *Server) openDynamoStores(cfg *config.SessionStore) (scs.Store, scs.Store, error) {
-	var svc *dynamodb.DynamoDB
+	var svc *dynamodb.Client
 	if cfg.Endpoint.Host == "" {
-		svc = dynamodb.New(s.aws)
+		svc = dynamodb.NewFromConfig(s.config.AWS.Config)
 	} else {
-		svc = dynamodb.New(s.aws,
-			s.aws.Config.Copy().
-				WithEndpoint(
+		creds := credentials.NewStaticCredentialsProvider("id", "secret", "token")
+		svc = dynamodb.NewFromConfig(
+			aws.Config{
+				Credentials: creds,
+				Region:      "us-west-2",
+			},
+			dynamodb.WithEndpointResolver(
+				dynamodb.EndpointResolverFromURL(
 					cfg.Endpoint.String(),
-				).
-				WithCredentials(
-					credentials.NewStaticCredentials("id", "secret", "token"),
+					func(e *aws.Endpoint) {
+						e.HostnameImmutable = true
+					},
 				),
+			),
 		)
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -17,7 +18,8 @@ func main() {
 	fmt.Println("GitSHA:", build.GitSHA)
 	fmt.Println("Timestamp:", build.Timestamp)
 
-	s, err := server.New()
+	ctx := context.Background()
+	s, err := server.New(ctx)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

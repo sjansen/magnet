@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/sjansen/magnet/internal/webui/server"
@@ -8,9 +9,10 @@ import (
 
 type runserverCmd struct{}
 
-func (cmd *runserverCmd) Run(ctx *context) error {
+func (cmd *runserverCmd) Run() error {
 	fmt.Println("Starting server...")
-	s, err := server.New()
+	ctx := context.Background()
+	s, err := server.New(ctx)
 	if err != nil {
 		return err
 	}

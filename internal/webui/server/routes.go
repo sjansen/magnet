@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi"
 	cmw "github.com/go-chi/chi/middleware"
 
-	"github.com/sjansen/magnet/internal/aws"
 	"github.com/sjansen/magnet/internal/webui/handlers"
 )
 
@@ -22,22 +21,18 @@ func (s *Server) addRouter() {
 		cmw.Recoverer,
 		cmw.Timeout(5*time.Second),
 		cmw.Heartbeat("/ping"),
+		s.sessions.LoadAndSave,
+		s.relaystate.LoadAndSave,
 	)
-	if s.useSCS {
-		r.Use(s.sessions.LoadAndSave)
-		r.Use(s.relaystate.LoadAndSave)
-	}
 
 	requireLogin := s.saml.RequireAccount
-	s3 := aws.NewS3Client(s.aws)
-
 	r.Get("/", handlers.Root)
 	r.Mount("/saml/", s.saml)
 	r.Handle("/browse/*", requireLogin(
-		handlers.NewBrowser("/browse/", s.config, s3),
+		handlers.NewBrowser("/browse/", s.config, s.config.AWS.NewS3Client()),
 	))
 	r.Handle("/upload/", requireLogin(
-		handlers.NewUploader("/upload/", s.config.Bucket, s3),
+		handlers.NewUploader("/upload/", s.config.Bucket, s.config.AWS.Config),
 	))
 	r.Handle("/whoami", requireLogin(
 		http.HandlerFunc(handlers.WhoAmI),

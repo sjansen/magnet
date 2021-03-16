@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/cloudfront/sign"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/dustin/go-humanize"
 
 	"github.com/sjansen/magnet/internal/config"
@@ -37,13 +37,13 @@ var validBrowsePrefixes = map[string]struct{}{
 type Browser struct {
 	basePath  string
 	bucket    string
-	client    *s3.S3
+	client    *s3.Client
 	signer    *sign.CookieSigner
 	signedURL string
 }
 
 // NewBrowser creates a new bucket browser.
-func NewBrowser(base string, cfg *config.WebUI, client *s3.S3) *Browser {
+func NewBrowser(base string, cfg *config.WebUI, client *s3.Client) *Browser {
 	return &Browser{
 		basePath:  base,
 		bucket:    cfg.Bucket,
@@ -63,6 +63,8 @@ func NewBrowser(base string, cfg *config.WebUI, client *s3.S3) *Browser {
 
 // ServeHTTP can be used to browse the objects in a bucket.
 func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	// TODO move trimming to router?
 	path := strings.TrimPrefix(r.URL.Path, b.basePath)
 	tmp := strings.SplitN(path, "/", 2)
@@ -74,11 +76,11 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	hasFinalSlash := strings.HasSuffix(path, "/")
 
-	result, err := b.client.ListObjectsV2(&s3.ListObjectsV2Input{
+	result, err := b.client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(b.bucket),
 		Prefix:    aws.String(path),
 		Delimiter: aws.String("/"),
-		MaxKeys:   aws.Int64(100),
+		MaxKeys:   100,
 		// TODO ContinuationToken
 	})
 	if err != nil {
@@ -106,7 +108,7 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !hasFinalSlash && len(result.CommonPrefixes) == 0 && len(result.Contents) == 1 {
 		object := result.Contents[0]
 		if path == *object.Key {
-			head, err := b.client.HeadObject(&s3.HeadObjectInput{
+			head, err := b.client.HeadObject(ctx, &s3.HeadObjectInput{
 				Bucket: aws.String(b.bucket),
 				Key:    object.Key,
 			})
@@ -115,8 +117,8 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			page := &pages.ObjectPage{
 				Metadata:  head.Metadata,
-				MimeType:  aws.StringValue(head.ContentType),
-				Size:      humanize.Bytes(uint64(*object.Size)),
+				MimeType:  aws.ToString(head.ContentType),
+				Size:      humanize.Bytes(uint64(object.Size)),
 				Timestamp: object.LastModified.String(),
 			}
 			page.Title = path

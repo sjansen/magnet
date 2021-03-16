@@ -13,7 +13,7 @@ type ObjectPage struct {
 	MimeType  string
 	Size      string
 	Timestamp string
-	Metadata  map[string]*string
+	Metadata  map[string]string
 }
 
 // WriteContent writes an HTTP response body.

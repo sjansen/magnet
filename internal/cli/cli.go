@@ -4,8 +4,6 @@ import (
 	"github.com/alecthomas/kong"
 )
 
-type context struct{}
-
 var cli struct {
 	Runserver runserverCmd `cmd:"cmd"`
 }
@@ -16,6 +14,6 @@ func ParseAndRun() {
 		kong.UsageOnError(),
 	)
 
-	err := ctx.Run(&context{})
+	err := ctx.Run()
 	ctx.FatalIfErrorf(err)
 }

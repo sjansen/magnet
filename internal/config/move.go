@@ -1,6 +1,10 @@
 package config
 
-import "github.com/vrischmann/envconfig"
+import (
+	"context"
+
+	"github.com/vrischmann/envconfig"
+)
 
 // Move contains settings for the "move" lambda.
 type Move struct {
@@ -8,7 +12,7 @@ type Move struct {
 }
 
 // LoadMoveConfig reads settings from the environment.
-func LoadMoveConfig() (*Move, error) {
+func LoadMoveConfig(ctx context.Context) (*Move, error) {
 	cfg := &Move{}
 	if err := envconfig.Init(&cfg); err != nil {
 		return nil, err

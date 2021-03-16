@@ -1,18 +1,20 @@
 package config
 
 import (
+	"context"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/vrischmann/envconfig"
+
+	"github.com/sjansen/magnet/internal/aws"
 )
 
 // WebUI contains settings for the "webui" lambda.
 type WebUI struct {
 	Config
 
+	aws.AWS `envconfig:"-"`
 	CloudFront
 	SAML
 	SessionStore
@@ -21,35 +23,39 @@ type WebUI struct {
 }
 
 // LoadWebUIConfig reads settings from the environment.
-func LoadWebUIConfig() (*WebUI, error) {
+func LoadWebUIConfig(ctx context.Context) (*WebUI, error) {
 	cfg := &WebUI{}
+
 	if err := envconfig.Init(&cfg); err != nil {
 		return nil, err
 	}
+
+	aws, err := aws.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cfg.AWS.Config = aws.Config
+
 	if cfg.SSMPrefix != "" {
-		if err := cfg.readSecrets(); err != nil {
+		err = cfg.readSecrets(ctx, aws.NewSSMClient())
+		if err != nil {
 			return nil, err
 		}
 	}
+
 	return cfg, nil
 }
 
-func (cfg *WebUI) readSecrets() error {
-	sess, err := session.NewSession()
-	if err != nil {
-		return err
-	}
-
-	svc := ssm.New(sess)
-	resp, err := svc.GetParameters(&ssm.GetParametersInput{
-		Names: []*string{
-			aws.String(cfg.SSMPrefix + "CLOUDFRONT_KEY_ID"),
-			aws.String(cfg.SSMPrefix + "CLOUDFRONT_PRIVATE_KEY"),
-			aws.String(cfg.SSMPrefix + "SAML_CERTIFICATE"),
-			aws.String(cfg.SSMPrefix + "SAML_METADATA_URL"),
-			aws.String(cfg.SSMPrefix + "SAML_PRIVATE_KEY"),
+func (cfg *WebUI) readSecrets(ctx context.Context, svc *ssm.Client) error {
+	resp, err := svc.GetParameters(ctx, &ssm.GetParametersInput{
+		Names: []string{
+			cfg.SSMPrefix + "CLOUDFRONT_KEY_ID",
+			cfg.SSMPrefix + "CLOUDFRONT_PRIVATE_KEY",
+			cfg.SSMPrefix + "SAML_CERTIFICATE",
+			cfg.SSMPrefix + "SAML_METADATA_URL",
+			cfg.SSMPrefix + "SAML_PRIVATE_KEY",
 		},
-		WithDecryption: aws.Bool(true),
+		WithDecryption: true,
 	})
 	if err != nil {
 		return err

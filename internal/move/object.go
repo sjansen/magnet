@@ -1,13 +1,15 @@
 package move
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
 	"path"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/gabriel-vasile/mimetype"
 )
 
@@ -19,11 +21,11 @@ type object struct {
 	MD5       string
 	MimeType  string
 	Extension string
-	Metadata  map[string]*string
+	Metadata  map[string]string
 }
 
-func (m *Mover) inspect(bucket, key string) (*object, error) {
-	resp, err := m.client.GetObject(&s3.GetObjectInput{
+func (m *Mover) inspect(ctx context.Context, bucket, key string) (*object, error) {
+	resp, err := m.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -48,15 +50,15 @@ func (m *Mover) inspect(bucket, key string) (*object, error) {
 
 	fmt.Println("  MD5:", md5)
 	fmt.Println("  Mimetype:", mime.String(), mime.Extension())
-	fmt.Println("  content-disposition:", aws.StringValue(resp.ContentDisposition))
-	fmt.Println("  content-encoding:", aws.StringValue(resp.ContentEncoding))
-	fmt.Println("  content-language:", aws.StringValue(resp.ContentLanguage))
-	fmt.Println("  content-type:", aws.StringValue(resp.ContentType))
+	fmt.Println("  content-disposition:", aws.ToString(resp.ContentDisposition))
+	fmt.Println("  content-encoding:", aws.ToString(resp.ContentEncoding))
+	fmt.Println("  content-language:", aws.ToString(resp.ContentLanguage))
+	fmt.Println("  content-type:", aws.ToString(resp.ContentType))
 	fmt.Println("  Metadata:")
 	for k, v := range resp.Metadata {
-		fmt.Printf("    %s: %q\n", k, aws.StringValue(v))
+		fmt.Printf("    %s: %q\n", k, v)
 	}
-	fmt.Println("  Modified:", aws.TimeValue(resp.LastModified))
+	fmt.Println("  Modified:", aws.ToTime(resp.LastModified))
 
 	return &object{
 		Bucket: bucket,
@@ -70,9 +72,9 @@ func (m *Mover) inspect(bucket, key string) (*object, error) {
 	}, nil
 }
 
-func (m *Mover) move(bucket, key string) error {
+func (m *Mover) move(ctx context.Context, bucket, key string) error {
 	fmt.Println("Inspecting", bucket, key)
-	src, err := m.inspect(bucket, key)
+	src, err := m.inspect(ctx, bucket, key)
 	if err != nil {
 		return err
 	}
@@ -89,7 +91,7 @@ func (m *Mover) move(bucket, key string) error {
 	}
 
 	fmt.Println("Creating", dst.Bucket, dst.Key)
-	_, err = m.client.CopyObject(&s3.CopyObjectInput{
+	_, err = m.client.CopyObject(ctx, &s3.CopyObjectInput{
 		Bucket: aws.String(dst.Bucket),
 		Key:    aws.String(dst.Key),
 
@@ -97,7 +99,7 @@ func (m *Mover) move(bucket, key string) error {
 		CopySourceIfMatch: src.ETag,
 
 		ContentType:       aws.String(dst.MimeType),
-		MetadataDirective: aws.String("REPLACE"),
+		MetadataDirective: types.MetadataDirectiveReplace,
 		Metadata:          dst.Metadata,
 	})
 	if err != nil {

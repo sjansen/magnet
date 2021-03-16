@@ -12,12 +12,10 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws/session"
-	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	proxy "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/crewjam/saml/samlsp"
 	"github.com/go-chi/chi"
 
-	"github.com/sjansen/magnet/internal/aws"
 	"github.com/sjansen/magnet/internal/config"
 )
 
@@ -26,30 +24,21 @@ var _ samlsp.Session = &Server{}
 
 // Server provides Magnet's API
 type Server struct {
-	aws        *session.Session
 	config     *config.WebUI
-	lambda     *chiadapter.ChiLambda
+	lambda     *proxy.ChiLambda
 	relaystate *scs.SessionManager
 	router     *chi.Mux
 	saml       *samlsp.Middleware
 	sessions   *scs.SessionManager
-
-	useSCS bool
 
 	done chan struct{}
 	wg   sync.WaitGroup
 }
 
 // New creates a new Server
-func New() (*Server, error) {
+func New(ctx context.Context) (*Server, error) {
 	fmt.Println("Loading config...")
-	cfg, err := config.LoadWebUIConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println("Preparing AWS clients...")
-	aws, err := aws.NewSession()
+	cfg, err := config.LoadWebUIConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +50,6 @@ func New() (*Server, error) {
 	}
 
 	s := &Server{
-		aws:    aws,
 		config: cfg,
 		done:   make(chan struct{}),
 		saml:   sp,
@@ -111,6 +99,6 @@ func (s *Server) ListenAndServe() error {
 
 // StartLambdaHandler starts the server waiting for events from AWS Lambda.
 func (s *Server) StartLambdaHandler() {
-	s.lambda = chiadapter.New(s.router)
+	s.lambda = proxy.New(s.router)
 	lambda.Start(s.LambdaHandler)
 }
