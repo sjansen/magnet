@@ -11,11 +11,11 @@ type Config struct {
 type CloudFront struct {
 	KeyID      string     `envconfig:"MAGNET_CLOUDFRONT_KEY_ID"`
 	PrivateKey PrivateKey `envconfig:"MAGNET_CLOUDFRONT_PRIVATE_KEY"`
+	URL        URL        `envconfig:"MAGNET_CLOUDFRONT_URL,default=/"`
 }
 
 // SAML contains settings for SAML-based authentication.
 type SAML struct {
-	RootURL     URL    `envconfig:"MAGNET_ROOT_URL"`
 	EntityID    string `envconfig:"MAGNET_SAML_ENTITY_ID,default=magnet"`
 	MetadataURL string `envconfig:"MAGNET_SAML_METADATA_URL"`
 	Certificate string `envconfig:"MAGNET_SAML_CERTIFICATE"`

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -17,15 +18,15 @@ import (
 )
 
 var icons map[string]string = map[string]string{
-	"":     "/magnet/icons/generic.svg",
-	"/":    "/magnet/icons/folder.svg",
-	".gif": "/magnet/icons/image.svg",
-	".ico": "/magnet/icons/image.svg",
-	".jpg": "/magnet/icons/image.svg",
-	".mp3": "/magnet/icons/audio.svg",
-	".mp4": "/magnet/icons/video.svg",
-	".png": "/magnet/icons/image.svg",
-	".svg": "/magnet/icons/image.svg",
+	"":     "icons/generic.svg",
+	"/":    "icons/folder.svg",
+	".gif": "icons/image.svg",
+	".ico": "icons/image.svg",
+	".jpg": "icons/image.svg",
+	".mp3": "icons/audio.svg",
+	".mp4": "icons/video.svg",
+	".png": "icons/image.svg",
+	".svg": "icons/image.svg",
 }
 
 var validBrowsePrefixes = map[string]struct{}{
@@ -38,8 +39,10 @@ type Browser struct {
 	basePath  string
 	bucket    string
 	client    *s3.Client
-	signer    *sign.CookieSigner
+	mediaURL  *url.URL
 	signedURL string
+	signer    *sign.CookieSigner
+	staticURL *url.URL
 }
 
 // NewBrowser creates a new bucket browser.
@@ -48,16 +51,18 @@ func NewBrowser(base string, cfg *config.WebUI, client *s3.Client) *Browser {
 		basePath:  base,
 		bucket:    cfg.Bucket,
 		client:    client,
-		signedURL: cfg.RootURL.String() + "*",
+		mediaURL:  &cfg.CloudFront.URL.URL,
+		signedURL: cfg.AppURL.String() + "*",
 		signer: sign.NewCookieSigner(
 			cfg.CloudFront.KeyID,
 			cfg.CloudFront.PrivateKey.Value,
 			func(o *sign.CookieOptions) {
-				o.Domain = cfg.RootURL.Host
+				o.Domain = cfg.AppURL.Host
 				o.Path = "/"
 				o.Secure = true
 			},
 		),
+		staticURL: &cfg.StaticURL.URL,
 	}
 }
 
@@ -115,7 +120,12 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 			}
+			url, err := url.Parse(path)
+			if err != nil {
+				fmt.Println(err)
+			}
 			page := &pages.ObjectPage{
+				URL:       b.mediaURL.ResolveReference(url),
 				Metadata:  head.Metadata,
 				MimeType:  aws.ToString(head.ContentType),
 				Size:      humanize.Bytes(uint64(object.Size)),
@@ -123,11 +133,8 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			page.Title = path
 			page.Key = path
-			if icon, ok := icons[strings.ToLower(filepath.Ext(path))]; ok {
-				page.Icon = icon
-			} else {
-				page.Icon = icons[""]
-			}
+			ext := strings.ToLower(filepath.Ext(path))
+			page.Icon = b.iconURL(ext)
 
 			pages.WriteResponse(w, page)
 			return
@@ -140,20 +147,29 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	page.Title = path
 	page.Key = path
-	page.Icon = icons["/"]
+	page.Icon = b.iconURL("/")
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
 		page.Prefixes = append(page.Prefixes, prefix)
 	}
 	for _, object := range result.Contents {
 		if key := strings.TrimPrefix(*object.Key, path); key != "" {
-			if icon, ok := icons[strings.ToLower(filepath.Ext(key))]; ok {
-				page.Objects[key] = icon
-			} else {
-				page.Objects[key] = icons[""]
-			}
+			ext := strings.ToLower(filepath.Ext(key))
+			page.Objects[key] = b.iconURL(ext)
 		}
 	}
 
 	pages.WriteResponse(w, page)
+}
+
+func (b *Browser) iconURL(ext string) string {
+	path, ok := icons[ext]
+	if !ok {
+		path = icons[""]
+	}
+	url, err := url.Parse(path)
+	if err != nil {
+		return ""
+	}
+	return b.staticURL.ResolveReference(url).String()
 }

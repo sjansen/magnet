@@ -12,14 +12,16 @@ import (
 
 // WebUI contains settings for the "webui" lambda.
 type WebUI struct {
-	Config
-
 	aws.AWS `envconfig:"-"`
 	CloudFront
-	SAML
-	SessionStore
+	Config
 
-	Listen string `envconfig:"MAGNET_LISTEN,default=localhost:8080"`
+	Listen    string `envconfig:"MAGNET_LISTEN,optional"`
+	AppURL    URL    `envconfig:"MAGNET_APP_URL"`
+	StaticURL URL    `envconfig:"MAGNET_STATIC_URL,default=/magnet/"`
+
+	Sessions SessionStore
+	SAML     SAML
 }
 
 // LoadWebUIConfig reads settings from the environment.

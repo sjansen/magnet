@@ -12,9 +12,9 @@ import (
 	"github.com/sjansen/magnet/internal/config"
 )
 
-func (s *Server) openDynamoStores(cfg *config.SessionStore) (scs.Store, scs.Store, error) {
+func (s *Server) openDynamoStores(cfg *config.WebUI) (scs.Store, scs.Store, error) {
 	var svc *dynamodb.Client
-	if cfg.Endpoint.Host == "" {
+	if cfg.Sessions.Endpoint.Host == "" {
 		svc = dynamodb.NewFromConfig(s.config.AWS.Config)
 	} else {
 		creds := credentials.NewStaticCredentialsProvider("id", "secret", "token")
@@ -25,7 +25,7 @@ func (s *Server) openDynamoStores(cfg *config.SessionStore) (scs.Store, scs.Stor
 			},
 			dynamodb.WithEndpointResolver(
 				dynamodb.EndpointResolverFromURL(
-					cfg.Endpoint.String(),
+					cfg.Sessions.Endpoint.String(),
 					func(e *aws.Endpoint) {
 						e.HostnameImmutable = true
 					},
@@ -34,8 +34,8 @@ func (s *Server) openDynamoStores(cfg *config.SessionStore) (scs.Store, scs.Stor
 		)
 	}
 
-	store := dynamostore.NewWithTableName(svc, cfg.Table)
-	if cfg.Create {
+	store := dynamostore.NewWithTableName(svc, cfg.Sessions.Table)
+	if cfg.Sessions.Create {
 		err := store.CreateTable()
 		if err != nil {
 			return nil, nil, err

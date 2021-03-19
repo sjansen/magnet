@@ -44,7 +44,7 @@ func New(ctx context.Context) (*Server, error) {
 	}
 
 	fmt.Println("Loading SAML config...")
-	sp, err := newSAMLMiddleware(&cfg.SAML)
+	sp, err := newSAMLMiddleware(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func New(ctx context.Context) (*Server, error) {
 	}
 
 	fmt.Println("Preparing session store...")
-	relaystate, sessions, err := s.openDynamoStores(&cfg.SessionStore)
+	relaystate, sessions, err := s.openDynamoStores(cfg)
 	if err != nil {
 		return nil, err
 	}
