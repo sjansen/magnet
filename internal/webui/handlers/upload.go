@@ -9,28 +9,31 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/oklog/ulid/v2"
 
+	"github.com/sjansen/magnet/internal/config"
 	"github.com/sjansen/magnet/internal/util/s3form"
 	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
 // Uploader can be used to add objects to a bucket.
 type Uploader struct {
-	base   string
-	bucket string
-	config aws.Config
+	aws        aws.Config
+	base       string
+	bucket     string
+	staticRoot string
 }
 
 // NewUploader creates a new object uploader.
-func NewUploader(base string, bucket string, config aws.Config) *Uploader {
+func NewUploader(base string, cfg *config.WebUI, bucket string) *Uploader {
 	return &Uploader{
-		bucket: bucket,
-		config: config,
+		aws:        cfg.AWS.Config,
+		bucket:     bucket,
+		staticRoot: cfg.StaticRoot,
 	}
 }
 
 // ServeHTTP can be used to add objects to a bucket.
 func (u *Uploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	creds, err := u.config.Credentials.Retrieve(r.Context())
+	creds, err := u.aws.Credentials.Retrieve(r.Context())
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -55,7 +58,7 @@ func (u *Uploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	prefix := "inbox/" + ulid.String() + "/"
 
-	region := u.config.Region
+	region := u.aws.Region
 	bucket := u.bucket
 	form, err := s3form.New(region, bucket).
 		Prefix(prefix).
@@ -70,7 +73,9 @@ func (u *Uploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pages.WriteResponse(w, &pages.UploadPage{
+	p := &pages.UploadPage{
 		Form: form,
-	})
+	}
+	p.StaticRoot = u.staticRoot
+	pages.WriteResponse(w, p)
 }

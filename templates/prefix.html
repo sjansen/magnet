@@ -3,7 +3,7 @@
   <div class="px-4 py-5 sm:px-6">
     {{with .Header }}
     <h3 class="text-lg leading-6 font-medium text-gray-900">
-      <img src="{{ $.Icon }}" height="20" width="20" class="align-text-bottom inline mr-2" />
+      <img src="{{ $.StaticRoot }}{{ $.Icon }}" height="20" width="20" class="align-text-bottom inline mr-2" />
       {{range .Head -}}
         <a class="hover:underline" href="{{ .URL }}">{{ .Text }}</a>/
       {{- end}}
@@ -22,7 +22,7 @@
       {{range $object, $icon := .Objects }}
       <div class="{{if $even = not $even }}bg-gray-50{{ else }}bg-white{{ end }} px-4 py-5 sm:px-6">
         <a href="{{ $object }}" class="hover:underline">
-          <img src="{{ $icon }}" height="20" width="20" class="align-text-bottom inline mr-2" />
+          <img src="{{ $.StaticRoot }}{{ $icon }}" height="20" width="20" class="align-text-bottom inline mr-2" />
           {{ $object }}
         </a>
       </div>

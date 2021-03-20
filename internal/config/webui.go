@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"net/url"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
@@ -16,9 +17,10 @@ type WebUI struct {
 	CloudFront
 	Config
 
-	Listen    string `envconfig:"MAGNET_LISTEN,optional"`
-	AppURL    URL    `envconfig:"MAGNET_APP_URL"`
-	StaticURL URL    `envconfig:"MAGNET_STATIC_URL,default=/magnet/"`
+	Listen     string `envconfig:"MAGNET_LISTEN,optional"`
+	AppURL     *URL   `envconfig:"MAGNET_APP_URL"`
+	StaticURL  *URL   `envconfig:"MAGNET_STATIC_URL,default=/magnet/"`
+	StaticRoot string `envconfig:"-"`
 
 	Sessions SessionStore
 	SAML     SAML
@@ -44,6 +46,12 @@ func LoadWebUIConfig(ctx context.Context) (*WebUI, error) {
 			return nil, err
 		}
 	}
+
+	if !strings.HasSuffix(cfg.StaticURL.String(), "/") {
+		suffix, _ := url.Parse("./")
+		cfg.StaticURL = cfg.StaticURL.ResolveReference(suffix)
+	}
+	cfg.StaticRoot = cfg.StaticURL.String()
 
 	return cfg, nil
 }

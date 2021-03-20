@@ -27,8 +27,9 @@ type Href struct {
 
 // Page is an abstract class providing a standard page structure.
 type Page struct {
-	Status int
-	Title  string
+	Status     int
+	Title      string
+	StaticRoot string
 }
 
 // ContentType returns a MIME type.

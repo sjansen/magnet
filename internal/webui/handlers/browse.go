@@ -36,13 +36,13 @@ var validBrowsePrefixes = map[string]struct{}{
 
 // Browser can be used to browse the objects in a bucket.
 type Browser struct {
-	basePath  string
-	bucket    string
-	client    *s3.Client
-	mediaURL  *url.URL
-	signedURL string
-	signer    *sign.CookieSigner
-	staticURL *url.URL
+	basePath   string
+	bucket     string
+	client     *s3.Client
+	mediaURL   *url.URL
+	signedURL  string
+	signer     *sign.CookieSigner
+	staticRoot string
 }
 
 // NewBrowser creates a new bucket browser.
@@ -62,11 +62,11 @@ func NewBrowser(base string, cfg *config.WebUI, client *s3.Client) *Browser {
 				o.Secure = true
 			},
 		),
-		staticURL: &cfg.StaticURL.URL,
+		staticRoot: cfg.StaticRoot,
 	}
 }
 
-// ServeHTTP can be used to browse the objects in a bucket.
+// ServeHTTP handles requests to browse objects in a bucket.
 func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -132,9 +132,10 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Timestamp: object.LastModified.String(),
 			}
 			page.Title = path
+			page.StaticRoot = b.staticRoot
 			page.Key = path
 			ext := strings.ToLower(filepath.Ext(path))
-			page.Icon = b.iconURL(ext)
+			page.Icon = b.icon(ext)
 
 			pages.WriteResponse(w, page)
 			return
@@ -146,8 +147,9 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Objects:  make(map[string]string, len(result.Contents)),
 	}
 	page.Title = path
+	page.StaticRoot = b.staticRoot
 	page.Key = path
-	page.Icon = b.iconURL("/")
+	page.Icon = b.icon("/")
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
 		page.Prefixes = append(page.Prefixes, prefix)
@@ -155,21 +157,16 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, object := range result.Contents {
 		if key := strings.TrimPrefix(*object.Key, path); key != "" {
 			ext := strings.ToLower(filepath.Ext(key))
-			page.Objects[key] = b.iconURL(ext)
+			page.Objects[key] = b.icon(ext)
 		}
 	}
 
 	pages.WriteResponse(w, page)
 }
 
-func (b *Browser) iconURL(ext string) string {
-	path, ok := icons[ext]
-	if !ok {
-		path = icons[""]
+func (b *Browser) icon(ext string) string {
+	if path, ok := icons[ext]; ok {
+		return path
 	}
-	url, err := url.Parse(path)
-	if err != nil {
-		return ""
-	}
-	return b.staticURL.ResolveReference(url).String()
+	return icons[""]
 }

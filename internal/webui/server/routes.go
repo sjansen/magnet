@@ -26,17 +26,19 @@ func (s *Server) addRouter() {
 	)
 
 	requireLogin := s.saml.RequireAccount
-	r.Get("/", handlers.Root)
-	r.Mount("/saml/", s.saml)
-	r.Handle("/browse/*", requireLogin(
+	r.Method("GET", "/",
+		handlers.NewRoot(s.config),
+	)
+	r.Method("GET", "/browse/*", requireLogin(
 		handlers.NewBrowser("/browse/", s.config, s.config.AWS.NewS3Client()),
 	))
-	r.Handle("/upload/", requireLogin(
-		handlers.NewUploader("/upload/", s.config.Bucket, s.config.AWS.Config),
+	r.Method("GET", "/upload/", requireLogin(
+		handlers.NewUploader("/upload/", s.config, s.config.Bucket),
 	))
-	r.Handle("/whoami", requireLogin(
-		http.HandlerFunc(handlers.WhoAmI),
+	r.Method("GET", "/whoami/", requireLogin(
+		handlers.NewWhoAmI(s.config),
 	))
+	r.Mount("/saml/", s.saml)
 
 	if s.config.Development {
 		r.Get("/favicon.ico",
