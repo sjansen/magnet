@@ -1,5 +1,5 @@
 {{template "header" .}}
-<form action="{{ .Form.Action }}" method="{{ .Form.Method }}" enctype="{{ .Form.Enctype }}">
+<form action="{{ .Form.Action }}" enctype="{{ .Form.Enctype }}" method="{{ .Form.Method }}" onsubmit="uploadFile(event)">
   {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
   <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
   {{end}}{{end}}
@@ -26,6 +26,7 @@
       ></div>
     </template>
     <input type="file" name="file" accept="image/*" @change="fileChosen" class="m-2">
+    <span class="progress"></span>
   </div>
 </div>
 </form>
@@ -48,6 +49,27 @@
         reader.onload = e => callback(e.target.result)
       },
     }
+  }
+
+  function uploadFile(e) {
+    e.preventDefault();
+    var form = e.target;
+    var formdata = new FormData(form);
+    var progress = form.querySelector(".progress");
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(form.method, form.action);
+    xhr.upload.addEventListener("progress", function(e){
+      var pct = Math.round(e.loaded / e.total * 100);
+      if (pct == 100 && e.loaded < e.total) {
+        pct = 99;
+      }
+      progress.innerText = pct + "%";
+    }, false);
+    xhr.upload.addEventListener("loadend", function(e){
+      progress.innerText = "Uploaded";
+    }, false);
+    xhr.send(formdata);
   }
 </script>
 {{template "footer" .}}
