@@ -36,9 +36,13 @@ func (s *Server) openDynamoStores(cfg *config.WebUI) (scs.Store, scs.Store, erro
 
 	store := dynamostore.NewWithTableName(svc, cfg.Sessions.Table)
 	if cfg.Sessions.Create {
-		err := store.CreateTable()
-		if err != nil {
-			return nil, nil, err
+		for i := 0; i < 3; i++ {
+			if err := store.CreateTable(); err == nil {
+				break
+			} else if i > 1 {
+				return nil, nil, err
+			}
+			time.Sleep(1 * time.Second)
 		}
 	}
 
