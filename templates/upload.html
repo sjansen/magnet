@@ -1,61 +1,178 @@
 {{template "header" .}}
-<form action="{{ .Form.Action }}" enctype="{{ .Form.Enctype }}" method="{{ .Form.Method }}" onsubmit="uploadFile(event)">
+<form id="form" action="{{ .Form.Action }}" enctype="{{ .Form.Enctype }}" method="{{ .Form.Method }}" onsubmit="uploadFile(event)">
   {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
   <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
   {{end}}{{end}}
-<div x-data="imageViewer()" class="md:flex md:flex-row-reverse float-left">
-  <div class="md:ml-4 md:flex-nogrow">
-    <label for="x-amz-meta-creator" class="block mb-2">Creator</label>
-    <input name="x-amz-meta-creator" id="x-amz-meta-creator" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:ring-purple-700 focus:border-purple-700">
-    <label for="x-amz-meta-license" class="block mb-2">License</label>
-    <input name="x-amz-meta-license" id="x-amz-meta-license" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:border-purple-700 focus:ring-purple-700">
-    <label for="x-amz-meta-source" class="block mb-2">Source</label>
-    <input name="x-amz-meta-source" id="x-amz-meta-source" class="block mb-4 px-2 py-1 border rounded-md shadow-sm border-gray-300 focus:ring-purple-700 focus:border-purple-700">
-    <input type="submit" value="Upload" class="block px-4 py-2 rounded-lg shadow-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:ring-purple-600">
+  <input type="hidden" name="x-amz-meta-creator" value="">
+  <input type="hidden" name="x-amz-meta-license" value="">
+  <input type="hidden" name="x-amz-meta-source" value="">
+</form>
+
+<div x-data="uploader()" class="flex flex-col flex-grow p-2">
+  <div id="dropzone" class="border-2 rounded-lg p-4"
+    :class="{'border-dashed': !dragActive,  'border-gray-300': !dragActive, 'border-purple-600': dragActive}"
+    @dragenter.stop="dragenter"
+    @dragleave.stop="dragleave"
+    @drop.stop="drop"
+    @dragover.window="windowDnD"
+    @drop.window="windowDnD"
+  >
+    Drop Items Here
   </div>
-  <div class="mb-2" class="md:flex-none">
-    <template x-if="imageUrl">
-      <img :src="imageUrl"
-           class="rounded border border-gray-200 bg-gray-100 object-contain"
-           style="width: 300px; height: 200px;"
-      >
-    </template>
-    <template x-if="!imageUrl">
-      <div class="border rounded border-gray-200 bg-gray-100"
-           style="width: 300px; height: 200px;"
-      ></div>
-    </template>
-    <input type="file" name="file" accept="image/*" @change="fileChosen" class="m-2">
-    <span class="progress"></span>
+
+  <div class="mt-2">
+    <button @click="uploadFiles" class="p-2 bg-purple-600 text-white rounded-lg">
+      Upload
+    </button>
+    <span id="progress"></span>
+  </div>
+
+  <div class="flex flex-row">
+    <div class="mt-2 flex-grow">
+      <table>
+        <thead>
+          <tr>
+            <td class="w-36">
+              Pending: <span x-text="files.length"></span>
+            </td>
+            <th class="px-3 w-36 text-left">File</th>
+            <th class="px-3 w-24">Size</th>
+          </tr>
+        </thead>
+        <tbody>
+        <template x-for="(file, index) in files" :key="file">
+          <tr :class="{'bg-gray-100': index % 2}">
+            <td class="bg-white align-center pr-3">
+              <img :src="imageURL(file)" @load.stop="revokeImageURL($event)"
+                class="bg-black h-24 w-36 object-scale-down rounded-lg"
+              />
+            </td>
+            <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
+            <td x-text="file.size" class="px-3 text-right"></td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-2 flex-grow">
+      <table>
+        <thead>
+          <tr>
+            <td class="w-36">
+              Uploaded: <span x-text="uploaded.length"></span>
+            </td>
+            <th class="px-3 w-36 text-left">File</th>
+            <th class="px-3 w-24">Size</th>
+          </tr>
+        </thead>
+        <tbody>
+        <template x-for="(file, index) in uploaded" :key="file">
+          <tr :class="{'bg-gray-100': index % 2}">
+            <td class="bg-white align-center pr-3">
+              <img :src="imageURL(file)" @load.stop="revokeImageURL($event)"
+                class="bg-black h-24 w-36 object-scale-down rounded-lg"
+              />
+            </td>
+            <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
+            <td x-text="file.size" class="px-3 text-right"></td>
+          </tr>
+        </template>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-</form>
+
 <script>
-  function imageViewer(src = '') {
-    return {
-      imageUrl: src,
+var imageExtensions = /\.(gif|jpg|jpeg|png)$/i;
 
-      fileChosen(event) {
-        this.fileToDataUrl(event, src => this.imageUrl = src)
-      },
-
-      fileToDataUrl(event, callback) {
-        if (! event.target.files.length) return
-
-        let file = event.target.files[0],
-            reader = new FileReader()
-
-        reader.readAsDataURL(file)
-        reader.onload = e => callback(e.target.result)
-      },
-    }
+function imageURL(file) {
+  if (imageExtensions.test(file.name) || file.type.startsWith("image/")) {
+    return URL.createObjectURL(file);
   }
+}
 
-  function uploadFile(e) {
-    e.preventDefault();
-    var form = e.target;
-    var formdata = new FormData(form);
-    var progress = form.querySelector(".progress");
+function revokeImageURL(e) {
+  URL.revokeObjectURL(e.target.src)
+}
+
+function scanDirectory(entry, files) {
+  var directoryReader = entry.createReader();
+  directoryReader.readEntries(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isDirectory) {
+        scanDirectory(entry, files);
+      } else if (!entry.name.startsWith(".")) {
+        entry.file(function(f){
+          files.push(f);
+        });
+      }
+    });
+  });
+}
+
+function uploader() {
+  return {
+    dragActive: false,
+    files: [],
+    uploaded: [],
+
+    dragenter(e) {
+      var dt = e.dataTransfer;
+      this.dragActive = dt && dt.types.indexOf("Files") != -1;
+      return this.dragActive;
+    },
+
+    dragleave(e) {
+      this.dragActive = false;
+    },
+
+    drop(e) {
+      e.preventDefault();
+      this.dragActive = false;
+      var files = this.files;
+      var items = Array.from(e.dataTransfer.items);
+      items.forEach(function(item) {
+        if (item.kind == 'file') {
+          if (item.webkitGetAsEntry) {
+            var entry = item.webkitGetAsEntry();
+            if (entry.isDirectory) {
+              return scanDirectory(entry, files);
+            }
+          }
+          files.push(item.getAsFile());
+        }
+      })
+    },
+
+    upload(e) {
+      console.log(this.files);
+      this.uploaded = this.files;
+      this.files = [];
+    },
+
+    uploadFiles(e) {
+      var files = this.files;
+      var uploaded = this.uploaded;
+      uploadFile(files[0], function(){
+        uploaded.push(files.shift());
+      });
+    },
+
+    windowDnD(e) {
+      e.preventDefault();
+      if (e.target.id != "dropzone") {
+        e.dataTransfer.dropEffect = "none";
+      }
+    },
+  }
+}
+
+function uploadFile(file, callback) {
+    var form = document.getElementById("form");
+    var progress = document.getElementById("progress");
+    var prefix = "Uploading " + (file.webkitRelativePath || file.name);
 
     var xhr = new XMLHttpRequest();
     xhr.open(form.method, form.action);
@@ -64,12 +181,16 @@
       if (pct == 100 && e.loaded < e.total) {
         pct = 99;
       }
-      progress.innerText = pct + "%";
+      progress.innerText = prefix + " " + pct + "%";
     }, false);
     xhr.upload.addEventListener("loadend", function(e){
-      progress.innerText = "Uploaded";
+      progress.innerText = "";
+      callback();
     }, false);
+
+    var formdata = new FormData(form);
+    formdata.set("file", file);
     xhr.send(formdata);
-  }
+}
 </script>
 {{template "footer" .}}
