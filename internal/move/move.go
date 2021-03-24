@@ -3,6 +3,7 @@ package move
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -49,7 +50,12 @@ func New() (*Mover, error) {
 // HandleEvent handles Lambda events.
 func (m *Mover) HandleEvent(ctx context.Context, event Event) error {
 	for _, e := range event.S3Events {
-		err := m.move(ctx, e.S3.Bucket.Name, e.S3.Object.Key)
+		key, err := url.QueryUnescape(e.S3.Object.Key)
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		err = m.move(ctx, e.S3.Bucket.Name, key)
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
