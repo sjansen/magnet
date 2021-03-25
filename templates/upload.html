@@ -8,17 +8,34 @@
   <input type="hidden" name="x-amz-meta-source" value="">
 </form>
 
-<div x-data="uploader()" class="flex flex-col flex-grow p-2">
-  <div id="dropzone" class="border-2 rounded-lg p-4"
+<div x-data="uploader()" class="p-2 flex flex-col flex-grow">
+  <div id="dropzone" class="p-4 border-2 rounded-lg flex flex-row items-center"
     :class="{'border-dashed': !dragActive,  'border-gray-300': !dragActive, 'border-purple-600': dragActive}"
-    @dragenter.stop="dragenter"
-    @dragleave.stop="dragleave"
     @drop.stop="drop"
     @dragover.window="windowDnD"
     @drop.window="windowDnD"
   >
-    Drop Items Here
+    <div class="text-center flex-grow">Drop Items Here</div>
+    <button @click.prevent="$refs.files.click()" class="ml-4 p-2 bg-purple-600 text-white rounded-lg">
+      Add Files
+    </button>
+    <button @click.prevent="$refs.folders.click()" class="ml-4 p-2 bg-purple-600 text-white rounded-lg">
+      Add Folders
+    </button>
   </div>
+
+  <form id="filepickers">
+    <input x-ref="files"
+      type="file" multiple
+      @change="addFiles"
+      style="display:none;"
+    >
+    <input x-ref="folders"
+      type="file" webkitdirectory
+      @change="addFiles"
+      style="display:none;"
+    >
+  </form>
 
   <div class="mt-2">
     <button @click="uploadFiles" class="p-2 bg-purple-600 text-white rounded-lg">
@@ -44,7 +61,7 @@
           <tr :class="{'bg-gray-100': index % 2}">
             <td class="bg-white align-center pr-3">
               <img :src="imageURL(file)" @load.stop="revokeImageURL($event)"
-                class="bg-black h-24 w-36 object-scale-down rounded-lg"
+                class="checkerboard h-24 w-36 object-scale-down rounded-lg"
               />
             </td>
             <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
@@ -71,7 +88,7 @@
           <tr :class="{'bg-gray-100': index % 2}">
             <td class="bg-white align-center pr-3">
               <img :src="imageURL(file)" @load.stop="revokeImageURL($event)"
-                class="bg-black h-24 w-36 object-scale-down rounded-lg"
+                class="checkerboard h-24 w-36 object-scale-down rounded-lg"
               />
             </td>
             <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
@@ -118,14 +135,12 @@ function uploader() {
     files: [],
     uploaded: [],
 
-    dragenter(e) {
-      var dt = e.dataTransfer;
-      this.dragActive = dt && dt.types.indexOf("Files") != -1;
-      return this.dragActive;
-    },
-
-    dragleave(e) {
-      this.dragActive = false;
+    addFiles(e) {
+      var files = this.files;
+      var items = Array.from(e.target.files);
+      items.forEach(function(file) {
+        files.push(file);
+      });
     },
 
     drop(e) {
@@ -147,7 +162,6 @@ function uploader() {
     },
 
     upload(e) {
-      console.log(this.files);
       this.uploaded = this.files;
       this.files = [];
     },
@@ -162,9 +176,14 @@ function uploader() {
 
     windowDnD(e) {
       e.preventDefault();
-      if (e.target.id != "dropzone") {
+      if (e.target.matches('#dropzone, #dropzone *')) {
+        var dt = e.dataTransfer;
+        this.dragActive = dt && dt.types.indexOf("Files") != -1;
+      } else {
         e.dataTransfer.dropEffect = "none";
+        this.dragActive = false;
       }
+      return this.dragActive;
     },
   }
 }

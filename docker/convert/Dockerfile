@@ -26,8 +26,10 @@ FROM alpine:3
 RUN apk add --no-cache --update \
     advancecomp \
     ca-certificates \
-    jpegoptim \
+    exiftool \
+    ffmpeg \
     gifsicle \
+    jpegoptim \
     libjpeg-turbo-utils \
     libwebp-tools \
     optipng \
