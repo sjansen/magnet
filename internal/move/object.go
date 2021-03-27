@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -60,34 +61,34 @@ func (m *Mover) inspect(ctx context.Context, bucket, key string) (*object, error
 	}
 	fmt.Println("  Modified:", aws.ToTime(resp.LastModified))
 
+	base := strings.TrimPrefix(key, "inbox/")
+	base = base[:len(base)-len(path.Ext(base))]
+	if idx := strings.IndexRune(base, '/'); idx > -1 {
+		base = base[idx+1:]
+	}
+	if prefix, ok := resp.Metadata["batch-prefix"]; ok {
+		delete(resp.Metadata, "batch-prefix")
+		key = path.Join("review", prefix, base, md5+mime.Extension())
+	} else {
+		key = path.Join("review", base, md5+mime.Extension())
+	}
+
 	return &object{
 		Bucket: bucket,
 		Key:    key,
 
-		ETag:      resp.ETag,
-		MD5:       md5,
-		MimeType:  mime.String(),
-		Extension: mime.Extension(),
-		Metadata:  resp.Metadata,
+		ETag:     resp.ETag,
+		MD5:      md5,
+		MimeType: mime.String(),
+		Metadata: resp.Metadata,
 	}, nil
 }
 
 func (m *Mover) move(ctx context.Context, bucket, key string) error {
 	fmt.Println("Inspecting", bucket, key)
-	src, err := m.inspect(ctx, bucket, key)
+	dst, err := m.inspect(ctx, bucket, key)
 	if err != nil {
 		return err
-	}
-
-	base := path.Base(src.Key)
-	base = base[:len(base)-len(path.Ext(base))]
-	dst := &object{
-		Bucket: bucket,
-		Key:    path.Join("review", base, src.MD5+src.Extension),
-
-		ETag:     src.ETag,
-		MimeType: src.MimeType,
-		Metadata: src.Metadata,
 	}
 
 	fmt.Println("Creating", dst.Bucket, dst.Key)
@@ -95,8 +96,8 @@ func (m *Mover) move(ctx context.Context, bucket, key string) error {
 		Bucket: aws.String(dst.Bucket),
 		Key:    aws.String(dst.Key),
 
-		CopySource:        aws.String(path.Join(src.Bucket, src.Key)),
-		CopySourceIfMatch: src.ETag,
+		CopySource:        aws.String(path.Join(bucket, key)),
+		CopySourceIfMatch: dst.ETag,
 
 		ContentType:       aws.String(dst.MimeType),
 		MetadataDirective: types.MetadataDirectiveReplace,

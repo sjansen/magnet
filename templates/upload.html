@@ -1,14 +1,5 @@
 {{template "header" .}}
-<form id="form" action="{{ .Form.Action }}" enctype="{{ .Form.Enctype }}" method="{{ .Form.Method }}" onsubmit="uploadFile(event)">
-  {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
-  <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
-  {{end}}{{end}}
-  <input type="hidden" name="x-amz-meta-creator" value="">
-  <input type="hidden" name="x-amz-meta-license" value="">
-  <input type="hidden" name="x-amz-meta-source" value="">
-</form>
-
-<div x-data="uploader()" class="p-2 flex flex-col flex-grow">
+<div x-data="uploader()" class="p-2 flex flex-col">
   <div id="dropzone" class="p-4 border-2 rounded-lg flex flex-row items-center"
     :class="{'border-dashed': !dragActive,  'border-gray-300': !dragActive, 'border-purple-600': dragActive}"
     @drop.stop="drop"
@@ -16,13 +7,35 @@
     @drop.window="windowDnD"
   >
     <div class="text-center flex-grow">Drop Items Here</div>
-    <button @click.prevent="$refs.files.click()" class="ml-4 p-2 bg-purple-600 text-white rounded-lg">
+    <button @click.prevent="$refs.files.click()"
+      class="ml-4 p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
+    >
       Add Files
     </button>
-    <button @click.prevent="$refs.folders.click()" class="ml-4 p-2 bg-purple-600 text-white rounded-lg">
+    <button @click.prevent="$refs.folders.click()"
+      class="ml-4 p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
+    >
       Add Folders
     </button>
   </div>
+
+  <form id="metadata" action="{{ .Form.Action }}" enctype="{{ .Form.Enctype }}" method="{{ .Form.Method }}" onsubmit="uploadFile(event)">
+    <div class="mt-4 flex flex-row">
+      {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
+      <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
+      {{end}}{{end}}
+      <label for="x-amz-meta-batch-prefix"
+        class="inline-block mr-2 py-0.5 align-middle"
+      >Batch Prefix</label>
+      <input id="x-amz-meta-batch-prefix"
+        class="inline-block flex-grow px-2 py-0.5 border border-gray-300 rounded-md focus:border-purple-600 focus:outline-none"
+        type="text" name="x-amz-meta-batch-prefix" value=""
+      >
+      <input type="hidden" name="x-amz-meta-creator" value="">
+      <input type="hidden" name="x-amz-meta-license" value="">
+      <input type="hidden" name="x-amz-meta-source" value="">
+    </div>
+  </form>
 
   <form id="filepickers">
     <input x-ref="files"
@@ -38,7 +51,7 @@
   </form>
 
   <div class="mt-2">
-    <button @click="uploadFiles" class="p-2 bg-purple-600 text-white rounded-lg">
+    <button @click="uploadFiles" class="p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400">
       Upload
     </button>
     <span id="progress"></span>
@@ -189,7 +202,7 @@ function uploader() {
 }
 
 function uploadFile(file, callback) {
-    var form = document.getElementById("form");
+    var form = document.getElementById("metadata");
     var progress = document.getElementById("progress");
     var prefix = "Uploading " + (file.webkitRelativePath || file.name);
 
@@ -208,6 +221,13 @@ function uploadFile(file, callback) {
     }, false);
 
     var formdata = new FormData(form);
+    if (file.webkitRelativePath) {
+      var key = formdata.get("key").replace(
+        "${filename}", file.webkitRelativePath
+      );
+      formdata.set("key", key);
+    }
+    console.log(formdata);
     formdata.set("file", file);
     xhr.send(formdata);
 }
