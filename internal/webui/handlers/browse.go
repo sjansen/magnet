@@ -14,6 +14,7 @@ import (
 	"github.com/dustin/go-humanize"
 
 	"github.com/sjansen/magnet/internal/config"
+	"github.com/sjansen/magnet/internal/util/s3path"
 	"github.com/sjansen/magnet/internal/webui/pages"
 )
 
@@ -143,7 +144,7 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	page := &pages.PrefixPage{
-		Prefixes: make([]string, 0, len(result.CommonPrefixes)),
+		Prefixes: make([]*s3path.S3Path, 0, len(result.CommonPrefixes)),
 		Objects:  make(map[string]string, len(result.Contents)),
 	}
 	page.Title = path
@@ -152,7 +153,8 @@ func (b *Browser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	page.Icon = b.icon("/")
 	for _, x := range result.CommonPrefixes {
 		prefix := strings.TrimPrefix(*x.Prefix, path)
-		page.Prefixes = append(page.Prefixes, prefix)
+		path, _ := s3path.FromS3(prefix)
+		page.Prefixes = append(page.Prefixes, path)
 	}
 	for _, object := range result.Contents {
 		if key := strings.TrimPrefix(*object.Key, path); key != "" {

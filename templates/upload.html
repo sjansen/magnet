@@ -2,7 +2,7 @@
 <div x-data="uploader()" class="p-2 flex flex-col">
   <div id="dropzone" class="p-4 border-2 rounded-lg flex flex-row items-center"
     :class="{'border-dashed': !dragActive,  'border-gray-300': !dragActive, 'border-purple-600': dragActive}"
-    @drop.stop="drop"
+    @drop.stop="dropFiles"
     @dragover.window="windowDnD"
     @drop.window="windowDnD"
   >
@@ -156,7 +156,7 @@ function uploader() {
       });
     },
 
-    drop(e) {
+    dropFiles(e) {
       e.preventDefault();
       this.dragActive = false;
       var files = this.files;
@@ -174,16 +174,13 @@ function uploader() {
       })
     },
 
-    upload(e) {
-      this.uploaded = this.files;
-      this.files = [];
-    },
-
-    uploadFiles(e) {
+    uploadFiles() {
+      var self = this;
       var files = this.files;
       var uploaded = this.uploaded;
       uploadFile(files[0], function(){
         uploaded.push(files.shift());
+        self.uploadFiles();
       });
     },
 
@@ -203,9 +200,14 @@ function uploader() {
 
 function uploadFile(file, callback) {
     var form = document.getElementById("metadata");
-    var progress = document.getElementById("progress");
-    var prefix = "Uploading " + (file.webkitRelativePath || file.name);
+    var prefix = form.elements["x-amz-meta-batch-prefix"];
+    if (prefix && !prefix.value) {
+      prefix.value = (new Date()).toISOString();
+    }
 
+    var filename = file.webkitRelativePath || file.name;
+    var message = "Uploading " + filename + " ";
+    var progress = document.getElementById("progress");
     var xhr = new XMLHttpRequest();
     xhr.open(form.method, form.action);
     xhr.upload.addEventListener("progress", function(e){
@@ -213,7 +215,7 @@ function uploadFile(file, callback) {
       if (pct == 100 && e.loaded < e.total) {
         pct = 99;
       }
-      progress.innerText = prefix + " " + pct + "%";
+      progress.innerText = message + pct + "%";
     }, false);
     xhr.upload.addEventListener("loadend", function(e){
       progress.innerText = "";
@@ -221,13 +223,9 @@ function uploadFile(file, callback) {
     }, false);
 
     var formdata = new FormData(form);
-    if (file.webkitRelativePath) {
-      var key = formdata.get("key").replace(
-        "${filename}", file.webkitRelativePath
-      );
-      formdata.set("key", key);
-    }
-    console.log(formdata);
+    formdata.set("key", formdata.get("key").replace(
+      "${filename}", filename
+    ));
     formdata.set("file", file);
     xhr.send(formdata);
 }

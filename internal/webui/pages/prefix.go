@@ -3,6 +3,8 @@ package pages
 import (
 	"fmt"
 	"io"
+
+	"github.com/sjansen/magnet/internal/util/s3path"
 )
 
 var _ Response = &PrefixPage{}
@@ -10,7 +12,7 @@ var _ Response = &PrefixPage{}
 // PrefixPage enables browsing to specific objects.
 type PrefixPage struct {
 	BrowsePage
-	Prefixes []string
+	Prefixes []*s3path.S3Path
 	Objects  map[string]string
 }
 

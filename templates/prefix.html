@@ -16,7 +16,7 @@
       {{ $even := false }}
       {{range $prefix := .Prefixes }}
       <div class="{{if $even = not $even }}bg-gray-50{{ else }}bg-white{{ end }} px-4 py-5 sm:px-6">
-        <a href="{{ $prefix }}" class="hover:underline">{{ $prefix }}</a>
+        <a href="{{ $prefix.Escaped }}" class="hover:underline">{{ $prefix.Display }}</a>
       </div>
       {{end}}
       {{range $object, $icon := .Objects }}
