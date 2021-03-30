@@ -60,13 +60,13 @@
   <div class="flex flex-row">
     <div class="mt-2 flex-grow">
       <table>
-        <thead>
+        <thead class="border-b border-gray-400">
           <tr>
             <td class="w-36">
               Pending: <span x-text="files.length"></span>
             </td>
-            <th class="px-3 w-36 text-left">File</th>
-            <th class="px-3 w-24">Size</th>
+            <th class="px-3 w-48 text-gray-600">File</th>
+            <th class="px-3 w-32 text-gray-600">Size</th>
           </tr>
         </thead>
         <tbody>
@@ -78,22 +78,23 @@
               />
             </td>
             <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
-            <td x-text="file.size" class="px-3 text-right"></td>
+            <td x-text="filesize(file.size)" class="px-3 text-right"></td>
           </tr>
         </template>
         </tbody>
       </table>
+      <p x-show="files.length < 1" class="text-gray-600">No files added yet.</p>
     </div>
 
     <div class="mt-2 flex-grow">
       <table>
-        <thead>
+        <thead class="border-b border-gray-400">
           <tr>
             <td class="w-36">
               Uploaded: <span x-text="uploaded.length"></span>
             </td>
-            <th class="px-3 w-36 text-left">File</th>
-            <th class="px-3 w-24">Size</th>
+            <th class="px-3 w-48 text-gray-600">File</th>
+            <th class="px-3 w-32 text-gray-600">Size</th>
           </tr>
         </thead>
         <tbody>
@@ -110,6 +111,7 @@
         </template>
         </tbody>
       </table>
+      <p x-show="uploaded.length < 1" class="text-gray-600">No files uploaded yet.</p>
     </div>
   </div>
 </div>
@@ -230,4 +232,5 @@ function uploadFile(file, callback) {
     xhr.send(formdata);
 }
 </script>
+<script src="https://cdn.filesizejs.com/filesize.min.js"></script>
 {{template "footer" .}}
