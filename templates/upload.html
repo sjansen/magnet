@@ -6,7 +6,10 @@
     @dragover.window="windowDnD"
     @drop.window="windowDnD"
   >
-    <div class="text-center flex-grow">Drop Items Here</div>
+    <div class="flex-grow text-center">
+      <i class="fas fa-2x fa-cloud-upload-alt align-middle text-gray-600"></i>
+      <span class="inline-block ml-2 align-middle font-medium text-gray-600">Drop Items Here</span>
+    </div>
     <button @click.prevent="$refs.files.click()"
       class="ml-4 p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
     >
@@ -24,12 +27,12 @@
       {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
       <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
       {{end}}{{end}}
-      <label for="x-amz-meta-batch-prefix"
-        class="inline-block mr-2 py-0.5 align-middle"
-      >Batch Prefix</label>
-      <input id="x-amz-meta-batch-prefix"
+      <label for="x-amz-meta-batch-prefix" class="inline-block mr-2 py-0.5 font-semibold text-gray-600">
+        Batch Prefix
+      </label>
+      <input id="x-amz-meta-batch-prefix" name="x-amz-meta-batch-prefix"
         class="inline-block flex-grow px-2 py-0.5 border border-gray-300 rounded-md focus:border-purple-600 focus:outline-none"
-        type="text" name="x-amz-meta-batch-prefix" value=""
+        type="text" x-model="prefix"
       >
       <input type="hidden" name="x-amz-meta-creator" value="">
       <input type="hidden" name="x-amz-meta-license" value="">
@@ -65,8 +68,8 @@
             <td class="w-36">
               Pending: <span x-text="files.length"></span>
             </td>
-            <th class="px-3 w-48 text-gray-600">File</th>
-            <th class="px-3 w-32 text-gray-600">Size</th>
+            <th class="px-3 w-48 font-semibold text-gray-600">File</th>
+            <th class="px-3 w-32 font-semibold text-gray-600">Size</th>
           </tr>
         </thead>
         <tbody>
@@ -93,8 +96,8 @@
             <td class="w-36">
               Uploaded: <span x-text="uploaded.length"></span>
             </td>
-            <th class="px-3 w-48 text-gray-600">File</th>
-            <th class="px-3 w-32 text-gray-600">Size</th>
+            <th class="px-3 w-48 font-semibold text-gray-600">File</th>
+            <th class="px-3 w-32 font-semibold text-gray-600">Size</th>
           </tr>
         </thead>
         <tbody>
@@ -147,6 +150,7 @@ function scanDirectory(entry, files) {
 function uploader() {
   return {
     dragActive: false,
+    prefix: (new Date()).toISOString(),
     files: [],
     uploaded: [],
 
