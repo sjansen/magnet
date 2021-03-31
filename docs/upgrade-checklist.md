@@ -20,3 +20,5 @@
   - Alpine.js: [`https://github.com/alpinejs/alpine`](https://github.com/alpinejs/alpine)
   - Font Awesome [`https://cdnjs.com/libraries/font-awesome`](https://cdnjs.com/libraries/font-awesome)
   - Tailwind CSS [`https://cdnjs.com/libraries/tailwindcss`](https://cdnjs.com/libraries/tailwindcss)
+- `templates/upload.html`
+  - filesize.js: [`https://cdnjs.com/libraries/filesize`](https://cdnjs.com/libraries/filesize)

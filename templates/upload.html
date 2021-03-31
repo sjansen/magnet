@@ -7,7 +7,7 @@
     @drop.window="windowDnD"
   >
     <div class="flex-grow text-center">
-      <i class="fas fa-2x fa-cloud-upload-alt align-middle text-gray-600"></i>
+      <i class="fa fa-2x fa-cloud-upload-alt align-middle text-gray-600"></i>
       <span class="inline-block ml-2 align-middle font-medium text-gray-600">Drop Items Here</span>
     </div>
     <button @click.prevent="$refs.files.click()"
@@ -54,7 +54,9 @@
   </form>
 
   <div class="mt-2">
-    <button @click="uploadFiles" class="p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400">
+    <button @click.prevent="uploadFiles"
+      class="p-2 bg-purple-600 text-white rounded-lg focus:outline-none focus:ring focus:ring-purple-400"
+    >
       Upload
     </button>
     <span id="progress"></span>
@@ -82,6 +84,14 @@
             </td>
             <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
             <td x-text="filesize(file.size)" class="px-3 text-right"></td>
+            <td>
+              <button aria-label="Remove File"
+                @click.prevent="removeFile(file.webkitRelativePath || file.name)"
+                class="px-2 py-0.5 bg-red-600 text-white rounded focus:outline-none focus:ring focus:ring-red-400"
+              >
+                <i class="fa fa-trash-alt" aria-hidden="true"></i>
+              </button>
+            </td>
           </tr>
         </template>
         </tbody>
@@ -109,7 +119,7 @@
               />
             </td>
             <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
-            <td x-text="file.size" class="px-3 text-right"></td>
+            <td x-text="filesize(file.size)" class="px-3 text-right"></td>
           </tr>
         </template>
         </tbody>
@@ -141,9 +151,20 @@ function scanDirectory(entry, files) {
       } else if (!entry.name.startsWith(".")) {
         entry.file(function(f){
           files.push(f);
+          sortFiles(files);
         });
       }
     });
+  });
+}
+
+function sortFiles(files) {
+  files.sort(function(a, b){
+    a = a.webkitRelativePath || a.name;
+    b = b.webkitRelativePath || b.name;
+    if (a < b) { return -1; }
+    if (a > b) { return 1; }
+    return 0;
   });
 }
 
@@ -160,6 +181,7 @@ function uploader() {
       items.forEach(function(file) {
         files.push(file);
       });
+      sortFiles(files);
     },
 
     dropFiles(e) {
@@ -172,12 +194,23 @@ function uploader() {
           if (item.webkitGetAsEntry) {
             var entry = item.webkitGetAsEntry();
             if (entry.isDirectory) {
-              return scanDirectory(entry, files);
+              scanDirectory(entry, files);
+              return;
             }
           }
           files.push(item.getAsFile());
         }
-      })
+      });
+      sortFiles(files);
+    },
+
+    removeFile(filename) {
+      this.files = this.files.filter(function(file){
+        if (file.webkitRelativePath) {
+          return filename !== file.webkitRelativePath;
+        }
+        return filename !== file.name;
+      });
     },
 
     uploadFiles() {
@@ -186,6 +219,7 @@ function uploader() {
       var uploaded = this.uploaded;
       uploadFile(files[0], function(){
         uploaded.push(files.shift());
+        sortFiles(uploaded);
         self.uploadFiles();
       });
     },
@@ -236,5 +270,7 @@ function uploadFile(file, callback) {
     xhr.send(formdata);
 }
 </script>
-<script src="https://cdn.filesizejs.com/filesize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/filesize/6.1.0/filesize.min.js"
+    integrity="sha512-K1ufgo/KGDIg6PqZlayCH/DcV9LFooMvuXa0Y+b+Z/ganPkoUjWvDDrzo9dqxRdWA5utkoHwTNm3G3SJemIdDw=="
+    crossorigin="anonymous"></script>
 {{template "footer" .}}
