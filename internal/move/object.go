@@ -66,8 +66,8 @@ func (m *Mover) inspect(ctx context.Context, bucket, key string) (*object, error
 	if idx := strings.IndexRune(base, '/'); idx > -1 {
 		base = base[idx+1:]
 	}
-	if prefix, ok := resp.Metadata["batch-prefix"]; ok {
-		delete(resp.Metadata, "batch-prefix")
+	if prefix, ok := resp.Metadata["batch"]; ok {
+		delete(resp.Metadata, "batch")
 		key = path.Join("review", prefix, base, md5+mime.Extension())
 	} else {
 		key = path.Join("review", base, md5+mime.Extension())

@@ -27,12 +27,12 @@
       {{range $name, $value := .Form.Fields }}{{if not (HasPrefix $name "x-amz-meta-")}}
       <input type="hidden" name="{{ $name }}"  value="{{ $value }}">
       {{end}}{{end}}
-      <label for="x-amz-meta-batch-prefix" class="inline-block mr-2 py-0.5 font-semibold text-gray-600">
+      <label for="x-amz-meta-batch" class="inline-block mr-2 py-0.5 font-semibold text-gray-600">
         Batch Prefix
       </label>
-      <input id="x-amz-meta-batch-prefix" name="x-amz-meta-batch-prefix"
+      <input id="x-amz-meta-batch" name="x-amz-meta-batch"
         class="inline-block flex-grow px-2 py-0.5 border border-gray-300 rounded-md focus:border-purple-600 focus:outline-none"
-        type="text" x-model="prefix"
+        type="text" x-model="batch"
       >
       <input type="hidden" name="x-amz-meta-creator" value="">
       <input type="hidden" name="x-amz-meta-license" value="">
@@ -68,25 +68,25 @@
         <thead class="border-b border-gray-400">
           <tr>
             <td class="w-36">
-              Pending: <span x-text="files.length"></span>
+              Pending: <span x-text="pending.length"></span>
             </td>
             <th class="px-3 w-48 font-semibold text-gray-600">File</th>
             <th class="px-3 w-32 font-semibold text-gray-600">Size</th>
           </tr>
         </thead>
         <tbody>
-        <template x-for="(file, index) in files" :key="file">
+        <template x-for="(filename, index) in pending" :key="filename">
           <tr :class="{'bg-gray-100': index % 2}">
             <td class="bg-white align-center pr-3">
-              <img :src="imageURL(file)" @load.stop="revokeImageURL($event)"
+              <img :src="imageURL(files.get(filename))" @load.stop="revokeImageURL($event)"
                 class="checkerboard h-24 w-36 object-scale-down rounded-lg"
               />
             </td>
-            <td x-text="file.webkitRelativePath || file.name" class="px-3"></td>
-            <td x-text="filesize(file.size)" class="px-3 text-right"></td>
+            <td x-text="filename" class="px-3"></td>
+            <td x-text="filesize(files.get(filename).size)" class="px-3 text-right"></td>
             <td>
               <button aria-label="Remove File"
-                @click.prevent="removeFile(file.webkitRelativePath || file.name)"
+                @click.prevent="removeFile(filename)"
                 class="px-2 py-0.5 bg-red-600 text-white rounded focus:outline-none focus:ring focus:ring-red-400"
               >
                 <i class="fa fa-trash-alt" aria-hidden="true"></i>
@@ -96,7 +96,7 @@
         </template>
         </tbody>
       </table>
-      <p x-show="files.length < 1" class="text-gray-600">No files added yet.</p>
+      <p x-show="pending.length < 1" class="text-gray-600">No files added yet.</p>
     </div>
 
     <div class="mt-2 flex-grow">
@@ -142,86 +142,105 @@ function revokeImageURL(e) {
   URL.revokeObjectURL(e.target.src)
 }
 
-function scanDirectory(entry, files) {
-  var directoryReader = entry.createReader();
-  directoryReader.readEntries(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isDirectory) {
-        scanDirectory(entry, files);
-      } else if (!entry.name.startsWith(".")) {
-        entry.file(function(f){
-          files.push(f);
-          sortFiles(files);
-        });
-      }
-    });
-  });
-}
-
-function sortFiles(files) {
-  files.sort(function(a, b){
-    a = a.webkitRelativePath || a.name;
-    b = b.webkitRelativePath || b.name;
-    if (a < b) { return -1; }
-    if (a > b) { return 1; }
-    return 0;
-  });
-}
-
 function uploader() {
   return {
     dragActive: false,
-    prefix: (new Date()).toISOString(),
-    files: [],
-    uploaded: [],
+    batch: (new Date()).toISOString(),
+    files: new Map(), // filename -> file
+    pending: [], // files
+    uploaded: [], // files
+
+    addFile(f) {
+      // IMPORTANT: after adding each batch of files,
+      // call this.sortPending()
+      var name = f.webkitRelativePath || f.name;
+      this.files.set(name, f);
+    },
 
     addFiles(e) {
-      var files = this.files;
+      var self = this;
       var items = Array.from(e.target.files);
-      items.forEach(function(file) {
-        files.push(file);
+      items.forEach(function(file){
+        self.addFile(file);
       });
-      sortFiles(files);
+      self.sortPending();
     },
 
     dropFiles(e) {
       e.preventDefault();
       this.dragActive = false;
-      var files = this.files;
+
+      var self = this;
       var items = Array.from(e.dataTransfer.items);
       items.forEach(function(item) {
         if (item.kind == 'file') {
           if (item.webkitGetAsEntry) {
             var entry = item.webkitGetAsEntry();
             if (entry.isDirectory) {
-              scanDirectory(entry, files);
+              self.scanDirectory(entry);
               return;
             }
           }
-          files.push(item.getAsFile());
+          self.addFile(item.getAsFile());
         }
       });
-      sortFiles(files);
+      this.sortPending();
     },
 
     removeFile(filename) {
-      this.files = this.files.filter(function(file){
-        if (file.webkitRelativePath) {
-          return filename !== file.webkitRelativePath;
-        }
-        return filename !== file.name;
+      this.files.delete(filename);
+      this.pending = this.pending.filter(function(name){
+        return name !== filename;
+      });
+    },
+
+    scanDirectory(entry) {
+      var self = this;
+      var directoryReader = entry.createReader();
+      directoryReader.readEntries(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isDirectory) {
+            self.scanDirectory(entry);
+          } else if (!entry.name.startsWith(".")) {
+            entry.file(function(f){
+              self.addFile(f);
+              self.sortPending();
+            });
+          }
+        });
+      });
+    },
+
+    sortPending() {
+      this.pending = Array.from(this.files.keys());
+      this.pending.sort();
+    },
+
+    sortUploaded() {
+      this.uploaded.sort(function(a, b){
+        a = a.webkitRelativePath || a.name;
+        b = b.webkitRelativePath || b.name;
+        if (a < b) { return -1; }
+        if (a > b) { return 1; }
+        return 0;
       });
     },
 
     uploadFiles() {
       var self = this;
-      var files = this.files;
-      var uploaded = this.uploaded;
-      uploadFile(files[0], function(){
-        uploaded.push(files.shift());
-        sortFiles(uploaded);
-        self.uploadFiles();
-      });
+      if (self.files.size > 0) {
+        var file = self.files.get(
+          self.pending[0]
+        );
+        uploadFile(file, function(){
+          self.files.delete(
+            self.pending.shift()
+          );
+          self.uploaded.push(file);
+          self.sortUploaded();
+          self.uploadFiles();
+        });
+      }
     },
 
     windowDnD(e) {
@@ -240,9 +259,9 @@ function uploader() {
 
 function uploadFile(file, callback) {
     var form = document.getElementById("metadata");
-    var prefix = form.elements["x-amz-meta-batch-prefix"];
-    if (prefix && !prefix.value) {
-      prefix.value = (new Date()).toISOString();
+    var batch = form.elements["x-amz-meta-batch"];
+    if (batch && !batch.value) {
+      batch.value = (new Date()).toISOString();
     }
 
     var filename = file.webkitRelativePath || file.name;
